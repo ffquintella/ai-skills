@@ -76,6 +76,11 @@ validate_format() {
       exit 1
     fi
   fi
+
+  if [[ -e "$target_dir" && ! -d "$target_dir" ]]; then
+    echo "Target path exists but is not a directory: $target_dir"
+    exit 1
+  fi
 }
 
 install_format() {
@@ -128,7 +133,7 @@ install_format() {
     echo "Failed to copy $format skills from $source_dir"
     exit 1
   fi
-  if [[ -e "$target_dir" ]]; then
+  if [[ -d "$target_dir" ]]; then
     backup_parent_dir="$(make_temp_dir "$target_parent" "skills.bak")"
     backup_target_dir="$backup_parent_dir/skills"
     if ! mv "$target_dir" "$backup_target_dir"; then
