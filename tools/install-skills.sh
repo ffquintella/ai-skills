@@ -88,9 +88,13 @@ install_format() {
       rm -rf "$backup_parent_dir"
     else
       rm -rf "$temp_target_dir"
-      mv "$backup_target_dir" "$target_dir"
+      if ! mv "$backup_target_dir" "$target_dir"; then
+        echo "Failed to install $format skills and failed to restore backup from $backup_target_dir"
+        echo "Backup preserved at: $backup_parent_dir"
+        exit 1
+      fi
       rm -rf "$backup_parent_dir"
-      echo "Failed to install $format skills to $target_dir"
+      echo "Failed to install $format skills to $target_dir (restored previous version)"
       exit 1
     fi
   else
