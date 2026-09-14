@@ -117,7 +117,7 @@ install_format() {
   target_parent="$(dirname "$target_dir")"
   mkdir -p "$target_parent"
 
-  if [[ "$OVERWRITE" != "true" && -d "$target_dir" ]] && ! dir_has_entries "$target_dir"; then
+  if [[ -d "$target_dir" ]] && ! dir_has_entries "$target_dir"; then
     if ! copy_tree "$source_dir" "$target_dir"; then
       echo "Failed to copy $format skills from $source_dir"
       exit 1
