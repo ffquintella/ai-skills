@@ -86,7 +86,7 @@ install_format() {
   mkdir -p "$target_parent"
   temp_target_dir="$(make_temp_dir "$target_parent" "skills.tmp")"
 
-  if ! cp -R "$source_dir"/. "$temp_target_dir"/; then
+  if ! (cd "$source_dir" && tar -cf - .) | (cd "$temp_target_dir" && tar -xf -); then
     rm -rf "$temp_target_dir"
     echo "Failed to copy $format skills from $source_dir"
     exit 1
