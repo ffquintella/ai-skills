@@ -66,9 +66,15 @@ install_format() {
   local backup_target_dir=""
   local backup_parent_dir=""
 
+  make_temp_dir() {
+    local base_dir="$1"
+    local prefix="$2"
+    TMPDIR="$base_dir" mktemp -d -t "${prefix}.XXXXXX"
+  }
+
   target_parent="$(dirname "$target_dir")"
   mkdir -p "$target_parent"
-  temp_target_dir="$(mktemp -d "$target_parent/skills.tmp.XXXXXX")"
+  temp_target_dir="$(make_temp_dir "$target_parent" "skills.tmp")"
 
   if ! cp -R "$source_dir"/. "$temp_target_dir"/; then
     rm -rf "$temp_target_dir"
@@ -76,7 +82,7 @@ install_format() {
     exit 1
   fi
   if [[ -d "$target_dir" ]]; then
-    backup_parent_dir="$(mktemp -d "$target_parent/skills.bak.XXXXXX")"
+    backup_parent_dir="$(make_temp_dir "$target_parent" "skills.bak")"
     backup_target_dir="$backup_parent_dir/skills"
     if ! mv "$target_dir" "$backup_target_dir"; then
       rm -rf "$temp_target_dir"
