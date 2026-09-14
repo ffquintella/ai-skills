@@ -117,21 +117,19 @@ install_format() {
   target_parent="$(dirname "$target_dir")"
   mkdir -p "$target_parent"
 
-  if [[ -d "$target_dir" ]] && ! dir_has_entries "$target_dir"; then
-    if ! copy_tree "$source_dir" "$target_dir"; then
-      echo "Failed to copy $format skills from $source_dir"
-      exit 1
-    fi
-    echo "Installed $format skills to $target_dir"
-    return 0
-  fi
-
   temp_target_dir="$(make_temp_dir "$target_parent" "skills.tmp")"
 
   if ! copy_tree "$source_dir" "$temp_target_dir"; then
     rm -rf "$temp_target_dir"
     echo "Failed to copy $format skills from $source_dir"
     exit 1
+  fi
+  if [[ -d "$target_dir" ]] && ! dir_has_entries "$target_dir"; then
+    if ! rmdir "$target_dir"; then
+      rm -rf "$temp_target_dir"
+      echo "Failed to prepare empty target directory: $target_dir"
+      exit 1
+    fi
   fi
   if [[ -d "$target_dir" ]]; then
     backup_parent_dir="$(make_temp_dir "$target_parent" "skills.bak")"
