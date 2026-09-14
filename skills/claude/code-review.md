@@ -1,8 +1,10 @@
-# Claude Skill: Code Review
-
+---
 name: code-review
 description: Review code changes for correctness, safety, and maintainability.
 version: 0.1.0
+---
+
+# Claude Skill: Code Review
 
 ## Instructions
 
