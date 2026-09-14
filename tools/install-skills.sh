@@ -69,17 +69,17 @@ validate_format() {
       ;;
   esac
 
+  if [[ -e "$target_dir" && ! -d "$target_dir" ]]; then
+    echo "Target path exists but is not a directory: $target_dir"
+    exit 1
+  fi
+
   if [[ -d "$target_dir" ]] && dir_has_entries "$target_dir"; then
     if [[ "$OVERWRITE" != "true" ]]; then
       echo "Target already contains skills: $target_dir"
       echo "Re-run with --overwrite to replace existing files."
       exit 1
     fi
-  fi
-
-  if [[ -e "$target_dir" && ! -d "$target_dir" ]]; then
-    echo "Target path exists but is not a directory: $target_dir"
-    exit 1
   fi
 }
 
