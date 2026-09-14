@@ -1,0 +1,11 @@
+{
+  "name": "code-review",
+  "description": "Review code changes for correctness, safety, and maintainability.",
+  "version": "0.1.0",
+  "steps": [
+    "Understand the intent of the change.",
+    "Identify high-confidence bugs and security issues.",
+    "Suggest concrete fixes.",
+    "Keep feedback concise and actionable."
+  ]
+}
