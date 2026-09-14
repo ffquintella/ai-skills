@@ -45,6 +45,6 @@ For example, `./tools/install-skills.sh all /tmp/agent-skills` installs to:
 - `/tmp/agent-skills/.claude/skills`
 - `/tmp/agent-skills/.codex/skills`
 
-If the destination already exists and is non-empty, the script exits without changing anything unless `--overwrite` is provided.
-For `all`, the script validates both Claude and Codex targets first, then performs installations sequentially.
-That means `all` is not a single atomic multi-format transaction if a later format install fails.
+If the destination already exists and is non-empty, the script exits unless `--overwrite` is provided.
+For `all`, the script validates both Claude and Codex targets first, then performs installs sequentially.
+So preflight validation is all-or-nothing, but `all --overwrite` is not a single atomic multi-format transaction if a later format install fails.

@@ -69,7 +69,17 @@ install_format() {
   make_temp_dir() {
     local base_dir="$1"
     local prefix="$2"
-    TMPDIR="$base_dir" mktemp -d -t "${prefix}.XXXXXX"
+    local temp_dir
+    if temp_dir="$(mktemp -d "$base_dir/${prefix}.XXXXXX" 2>/dev/null)"; then
+      echo "$temp_dir"
+      return 0
+    fi
+    if temp_dir="$(TMPDIR="$base_dir" mktemp -d -t "${prefix}.XXXXXX" 2>/dev/null)"; then
+      echo "$temp_dir"
+      return 0
+    fi
+    echo "Failed to create temporary directory in $base_dir"
+    exit 1
   }
 
   target_parent="$(dirname "$target_dir")"
