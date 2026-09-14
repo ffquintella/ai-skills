@@ -26,6 +26,11 @@ if [[ "$TARGET_BASE" == "/" ]]; then
   exit 1
 fi
 
+if ! command -v tar >/dev/null 2>&1; then
+  echo "Missing required dependency: tar"
+  exit 1
+fi
+
 if [[ "$FORMAT" == "all" && "$OVERWRITE" == "true" ]]; then
   echo "Combined overwrite for 'all' is not supported."
   echo "Run separate overwrite installs for claude and codex."
@@ -100,8 +105,8 @@ install_format() {
       echo "$temp_dir"
       return 0
     fi
-    if temp_dir="$(TMPDIR="$base_dir" mktemp -d -t "${prefix}.XXXXXX" 2>/dev/null)"; then
-      echo "$temp_dir"
+    if temp_dir="$(cd "$base_dir" && mktemp -d "${prefix}.XXXXXX" 2>/dev/null)"; then
+      echo "$base_dir/$temp_dir"
       return 0
     fi
     echo "Failed to create temporary directory in $base_dir"
