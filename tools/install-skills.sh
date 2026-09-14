@@ -64,6 +64,7 @@ install_format() {
   local target_parent
   local temp_target_dir
   local backup_target_dir=""
+  local backup_parent_dir=""
 
   target_parent="$(dirname "$target_dir")"
   mkdir -p "$target_parent"
@@ -75,20 +76,20 @@ install_format() {
     exit 1
   fi
   if [[ -d "$target_dir" ]]; then
-    backup_target_dir="$target_parent/skills.bak.$RANDOM.$RANDOM"
-    while [[ -e "$backup_target_dir" ]]; do
-      backup_target_dir="$target_parent/skills.bak.$RANDOM.$RANDOM"
-    done
+    backup_parent_dir="$(mktemp -d "$target_parent/skills.bak.XXXXXX")"
+    backup_target_dir="$backup_parent_dir/skills"
     if ! mv "$target_dir" "$backup_target_dir"; then
       rm -rf "$temp_target_dir"
+      rm -rf "$backup_parent_dir"
       echo "Failed to stage existing skills directory: $target_dir"
       exit 1
     fi
     if mv "$temp_target_dir" "$target_dir"; then
-      rm -rf "$backup_target_dir"
+      rm -rf "$backup_parent_dir"
     else
       rm -rf "$temp_target_dir"
       mv "$backup_target_dir" "$target_dir"
+      rm -rf "$backup_parent_dir"
       echo "Failed to install $format skills to $target_dir"
       exit 1
     fi
