@@ -21,6 +21,7 @@ install_format() {
     exit 1
   fi
 
+  rm -rf "$target_dir"
   mkdir -p "$target_dir"
   cp -R "$source_dir"/. "$target_dir"/
   echo "Installed $format skills to $target_dir"
