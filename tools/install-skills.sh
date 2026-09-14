@@ -11,6 +11,11 @@ FORMAT="$1"
 TARGET_BASE="${2:-$HOME}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+if [[ "$TARGET_BASE" == "/" ]]; then
+  echo "Refusing unsafe target base directory: /"
+  exit 1
+fi
+
 install_format() {
   local format="$1"
   local source_dir="$ROOT_DIR/skills/$format"
@@ -20,6 +25,18 @@ install_format() {
     echo "Missing source directory: $source_dir"
     exit 1
   fi
+
+  if [[ -z "$target_dir" || "$target_dir" == "/" ]]; then
+    echo "Unsafe target directory: $target_dir"
+    exit 1
+  fi
+  case "$target_dir" in
+    */".${format}"/skills) ;;
+    *)
+      echo "Unexpected target directory: $target_dir"
+      exit 1
+      ;;
+  esac
 
   rm -rf "$target_dir"
   mkdir -p "$target_dir"
