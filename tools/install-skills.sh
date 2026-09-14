@@ -26,7 +26,7 @@ if [[ "$TARGET_BASE" == "/" ]]; then
   exit 1
 fi
 
-install_format() {
+validate_format() {
   local format="$1"
   local source_dir="$ROOT_DIR/skills/$format"
   local target_dir="$TARGET_BASE/.${format}/skills"
@@ -55,26 +55,46 @@ install_format() {
       exit 1
     fi
   fi
+}
+
+install_format() {
+  local format="$1"
+  local source_dir="$ROOT_DIR/skills/$format"
+  local target_dir="$TARGET_BASE/.${format}/skills"
 
   local target_parent
   local temp_target_dir
+  local backup_target_dir
   target_parent="$(dirname "$target_dir")"
   mkdir -p "$target_parent"
   temp_target_dir="$(mktemp -d "$target_parent/skills.tmp.XXXXXX")"
 
   cp -R "$source_dir"/. "$temp_target_dir"/
-  rm -rf "$target_dir"
-  mv "$temp_target_dir" "$target_dir"
+  if [[ -d "$target_dir" ]]; then
+    backup_target_dir="$(mktemp -d "$target_parent/skills.bak.XXXXXX")"
+    rmdir "$backup_target_dir"
+    mv "$target_dir" "$backup_target_dir"
+    if mv "$temp_target_dir" "$target_dir"; then
+      rm -rf "$backup_target_dir"
+    else
+      mv "$backup_target_dir" "$target_dir"
+      echo "Failed to install $format skills to $target_dir"
+      exit 1
+    fi
+  else
+    mv "$temp_target_dir" "$target_dir"
+  fi
+
   echo "Installed $format skills to $target_dir"
 }
 
+FORMATS=()
 case "$FORMAT" in
   claude|codex)
-    install_format "$FORMAT"
+    FORMATS=("$FORMAT")
     ;;
   all)
-    install_format "claude"
-    install_format "codex"
+    FORMATS=("claude" "codex")
     ;;
   *)
     echo "Invalid format: $FORMAT"
@@ -82,3 +102,11 @@ case "$FORMAT" in
     exit 1
     ;;
 esac
+
+for item in "${FORMATS[@]}"; do
+  validate_format "$item"
+done
+
+for item in "${FORMATS[@]}"; do
+  install_format "$item"
+done
