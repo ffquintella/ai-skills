@@ -31,6 +31,11 @@ if ! command -v tar >/dev/null 2>&1; then
   exit 1
 fi
 
+if ! command -v mktemp >/dev/null 2>&1; then
+  echo "Missing required dependency: mktemp"
+  exit 1
+fi
+
 if [[ "$FORMAT" == "all" && "$OVERWRITE" == "true" ]]; then
   echo "Combined overwrite for 'all' is not supported."
   echo "Run separate overwrite installs for claude and codex."
@@ -141,6 +146,11 @@ install_format() {
   if ! copy_tree "$source_dir" "$temp_target_dir"; then
     rm -rf "$temp_target_dir"
     echo "Failed to copy $format skills from $source_dir"
+    exit 1
+  fi
+  if ! dir_has_entries "$temp_target_dir"; then
+    rm -rf "$temp_target_dir"
+    echo "Staged skills directory is empty after copy: $temp_target_dir"
     exit 1
   fi
   if [[ -d "$target_dir" ]] && ! dir_has_entries "$target_dir"; then

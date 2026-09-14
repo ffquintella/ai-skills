@@ -50,3 +50,4 @@ If the destination already exists and is non-empty, the script exits unless `--o
 Existing empty destination directories are removed and then replaced with a staged install directory.
 For `all`, the script validates both Claude and Codex targets first, then performs installs sequentially.
 Combined overwrite for `all` is intentionally blocked; run overwrite installs per format.
+The installer requires `tar` and `mktemp`, and refuses `/` as the target base directory.
