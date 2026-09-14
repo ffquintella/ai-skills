@@ -45,9 +45,23 @@ dir_has_entries() {
   fi
 
   local entries
+  local had_nullglob="false"
+  local had_dotglob="false"
+  if shopt -q nullglob; then
+    had_nullglob="true"
+  fi
+  if shopt -q dotglob; then
+    had_dotglob="true"
+  fi
+
   shopt -s nullglob dotglob
   entries=("$dir"/*)
-  shopt -u nullglob dotglob
+  if [[ "$had_nullglob" == "false" ]]; then
+    shopt -u nullglob
+  fi
+  if [[ "$had_dotglob" == "false" ]]; then
+    shopt -u dotglob
+  fi
 
   [[ ${#entries[@]} -gt 0 ]]
 }
