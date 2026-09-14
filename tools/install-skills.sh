@@ -32,6 +32,21 @@ if [[ "$FORMAT" == "all" && "$OVERWRITE" == "true" ]]; then
   exit 1
 fi
 
+dir_has_entries() {
+  local dir="$1"
+  if [[ ! -r "$dir" ]]; then
+    echo "Cannot read target directory: $dir"
+    exit 1
+  fi
+
+  local entries
+  shopt -s nullglob dotglob
+  entries=("$dir"/*)
+  shopt -u nullglob dotglob
+
+  [[ ${#entries[@]} -gt 0 ]]
+}
+
 validate_format() {
   local format="$1"
   local source_dir="$ROOT_DIR/skills/$format"
@@ -54,7 +69,7 @@ validate_format() {
       ;;
   esac
 
-  if [[ -d "$target_dir" ]] && find "$target_dir" -mindepth 1 -print -quit | grep -q .; then
+  if [[ -d "$target_dir" ]] && dir_has_entries "$target_dir"; then
     if [[ "$OVERWRITE" != "true" ]]; then
       echo "Target already contains skills: $target_dir"
       echo "Re-run with --overwrite to replace existing files."
@@ -97,7 +112,7 @@ install_format() {
   target_parent="$(dirname "$target_dir")"
   mkdir -p "$target_parent"
 
-  if [[ "$OVERWRITE" != "true" && -d "$target_dir" ]] && ! find "$target_dir" -mindepth 1 -print -quit | grep -q .; then
+  if [[ "$OVERWRITE" != "true" && -d "$target_dir" ]] && ! dir_has_entries "$target_dir"; then
     if ! copy_tree "$source_dir" "$target_dir"; then
       echo "Failed to copy $format skills from $source_dir"
       exit 1
