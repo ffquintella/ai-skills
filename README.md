@@ -45,5 +45,5 @@ For example, `./tools/install-skills.sh all /tmp/agent-skills` installs to:
 - `/tmp/agent-skills/.claude/skills`
 - `/tmp/agent-skills/.codex/skills`
 
-If the destination already has files, the script exits without changing anything unless `--overwrite` is provided.
+If the destination already exists and is non-empty, the script exits without changing anything unless `--overwrite` is provided.
 For `all`, the script validates both Claude and Codex targets first, then performs installations.

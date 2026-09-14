@@ -75,8 +75,10 @@ install_format() {
     exit 1
   fi
   if [[ -d "$target_dir" ]]; then
-    backup_target_dir="$(mktemp -d "$target_parent/skills.bak.XXXXXX")"
-    rmdir "$backup_target_dir"
+    backup_target_dir="$target_parent/skills.bak.$RANDOM.$RANDOM"
+    while [[ -e "$backup_target_dir" ]]; do
+      backup_target_dir="$target_parent/skills.bak.$RANDOM.$RANDOM"
+    done
     if ! mv "$target_dir" "$backup_target_dir"; then
       rm -rf "$temp_target_dir"
       echo "Failed to stage existing skills directory: $target_dir"
