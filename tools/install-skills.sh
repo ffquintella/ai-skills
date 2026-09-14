@@ -65,21 +65,12 @@ install_format() {
   local temp_target_dir
   local backup_target_dir=""
 
-  cleanup_install() {
-    if [[ -n "${temp_target_dir:-}" && -d "$temp_target_dir" ]]; then
-      rm -rf "$temp_target_dir"
-    fi
-    if [[ -n "${backup_target_dir:-}" && -d "$backup_target_dir" && ! -d "$target_dir" ]]; then
-      mv "$backup_target_dir" "$target_dir"
-    fi
-  }
-  trap cleanup_install RETURN
-
   target_parent="$(dirname "$target_dir")"
   mkdir -p "$target_parent"
   temp_target_dir="$(mktemp -d "$target_parent/skills.tmp.XXXXXX")"
 
   if ! cp -R "$source_dir"/. "$temp_target_dir"/; then
+    rm -rf "$temp_target_dir"
     echo "Failed to copy $format skills from $source_dir"
     exit 1
   fi
@@ -87,23 +78,24 @@ install_format() {
     backup_target_dir="$(mktemp -d "$target_parent/skills.bak.XXXXXX")"
     rmdir "$backup_target_dir"
     if ! mv "$target_dir" "$backup_target_dir"; then
+      rm -rf "$temp_target_dir"
       echo "Failed to stage existing skills directory: $target_dir"
       exit 1
     fi
     if mv "$temp_target_dir" "$target_dir"; then
       rm -rf "$backup_target_dir"
-      temp_target_dir=""
-      backup_target_dir=""
     else
+      rm -rf "$temp_target_dir"
+      mv "$backup_target_dir" "$target_dir"
       echo "Failed to install $format skills to $target_dir"
       exit 1
     fi
   else
     if ! mv "$temp_target_dir" "$target_dir"; then
+      rm -rf "$temp_target_dir"
       echo "Failed to install $format skills to $target_dir"
       exit 1
     fi
-    temp_target_dir=""
   fi
 
   echo "Installed $format skills to $target_dir"
