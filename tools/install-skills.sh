@@ -16,6 +16,11 @@ install_format() {
   local source_dir="$ROOT_DIR/skills/$format"
   local target_dir="$TARGET_BASE/.${format}/skills"
 
+  if [[ ! -d "$source_dir" ]]; then
+    echo "Missing source directory: $source_dir"
+    exit 1
+  fi
+
   mkdir -p "$target_dir"
   cp -R "$source_dir"/. "$target_dir"/
   echo "Installed $format skills to $target_dir"

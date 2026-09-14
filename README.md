@@ -31,3 +31,13 @@ tools/
 # custom destination base directory
 ./tools/install-skills.sh all /tmp/agent-skills
 ```
+
+The script installs into format-specific folders under the base directory:
+
+- Claude: `<base>/.claude/skills`
+- Codex: `<base>/.codex/skills`
+
+For example, `./tools/install-skills.sh all /tmp/agent-skills` installs to:
+
+- `/tmp/agent-skills/.claude/skills`
+- `/tmp/agent-skills/.codex/skills`
