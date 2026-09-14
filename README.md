@@ -46,5 +46,6 @@ For example, `./tools/install-skills.sh all /tmp/agent-skills` installs to:
 - `/tmp/agent-skills/.codex/skills`
 
 If the destination already exists and is non-empty, the script exits unless `--overwrite` is provided.
+Existing empty destination directories are replaced during install.
 For `all`, the script validates both Claude and Codex targets first, then performs installs sequentially.
 So preflight validation is all-or-nothing, but `all --overwrite` is not a single atomic multi-format transaction if a later format install fails.

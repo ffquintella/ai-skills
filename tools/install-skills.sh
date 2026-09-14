@@ -91,7 +91,7 @@ install_format() {
     echo "Failed to copy $format skills from $source_dir"
     exit 1
   fi
-  if [[ -d "$target_dir" ]]; then
+  if [[ -e "$target_dir" ]]; then
     backup_parent_dir="$(make_temp_dir "$target_parent" "skills.bak")"
     backup_target_dir="$backup_parent_dir/skills"
     if ! mv "$target_dir" "$backup_target_dir"; then
