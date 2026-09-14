@@ -135,11 +135,14 @@ install_format() {
   copy_tree() {
     local source="$1"
     local destination="$2"
-    (cd "$source" && tar -cf - .) | (cd "$destination" && tar -xf -)
+    (cd "$source" && tar -cpf - .) | (cd "$destination" && tar -xpf -)
   }
 
   target_parent="$(dirname "$target_dir")"
-  mkdir -p "$target_parent"
+  if ! mkdir -p "$target_parent"; then
+    echo "Failed to create target parent directory: $target_parent"
+    exit 1
+  fi
 
   temp_target_dir="$(make_temp_dir "$target_parent" "skills.tmp")"
 
