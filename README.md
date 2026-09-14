@@ -30,6 +30,9 @@ tools/
 
 # custom destination base directory
 ./tools/install-skills.sh all /tmp/agent-skills
+
+# replace existing installed skills
+./tools/install-skills.sh all /tmp/agent-skills --overwrite
 ```
 
 The script installs into format-specific folders under the base directory:
@@ -41,3 +44,5 @@ For example, `./tools/install-skills.sh all /tmp/agent-skills` installs to:
 
 - `/tmp/agent-skills/.claude/skills`
 - `/tmp/agent-skills/.codex/skills`
+
+If the destination already has files, the script exits without changing anything unless `--overwrite` is provided.

@@ -2,13 +2,23 @@
 
 set -euo pipefail
 
-if [[ $# -lt 1 || $# -gt 2 ]]; then
-  echo "Usage: $0 <claude|codex|all> [target_base_dir]"
+OVERWRITE="false"
+POSITIONAL_ARGS=()
+for arg in "$@"; do
+  if [[ "$arg" == "--overwrite" ]]; then
+    OVERWRITE="true"
+  else
+    POSITIONAL_ARGS+=("$arg")
+  fi
+done
+
+if [[ ${#POSITIONAL_ARGS[@]} -lt 1 || ${#POSITIONAL_ARGS[@]} -gt 2 ]]; then
+  echo "Usage: $0 <claude|codex|all> [target_base_dir] [--overwrite]"
   exit 1
 fi
 
-FORMAT="$1"
-TARGET_BASE="${2:-$HOME}"
+FORMAT="${POSITIONAL_ARGS[0]}"
+TARGET_BASE="${POSITIONAL_ARGS[1]:-$HOME}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [[ "$TARGET_BASE" == "/" ]]; then
@@ -38,7 +48,15 @@ install_format() {
       ;;
   esac
 
-  rm -rf "$target_dir"
+  if [[ -d "$target_dir" ]] && find "$target_dir" -mindepth 1 -print -quit | grep -q .; then
+    if [[ "$OVERWRITE" != "true" ]]; then
+      echo "Target already contains skills: $target_dir"
+      echo "Re-run with --overwrite to replace existing files."
+      exit 1
+    fi
+    rm -rf "$target_dir"
+  fi
+
   mkdir -p "$target_dir"
   cp -R "$source_dir"/. "$target_dir"/
   echo "Installed $format skills to $target_dir"
