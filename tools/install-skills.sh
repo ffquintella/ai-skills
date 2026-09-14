@@ -54,11 +54,17 @@ install_format() {
       echo "Re-run with --overwrite to replace existing files."
       exit 1
     fi
-    rm -rf "$target_dir"
   fi
 
-  mkdir -p "$target_dir"
-  cp -R "$source_dir"/. "$target_dir"/
+  local target_parent
+  local temp_target_dir
+  target_parent="$(dirname "$target_dir")"
+  mkdir -p "$target_parent"
+  temp_target_dir="$(mktemp -d "$target_parent/skills.tmp.XXXXXX")"
+
+  cp -R "$source_dir"/. "$temp_target_dir"/
+  rm -rf "$target_dir"
+  mv "$temp_target_dir" "$target_dir"
   echo "Installed $format skills to $target_dir"
 }
 
