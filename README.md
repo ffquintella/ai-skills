@@ -31,8 +31,9 @@ tools/
 # custom destination base directory
 ./tools/install-skills.sh all /tmp/agent-skills
 
-# replace existing installed skills
-./tools/install-skills.sh all /tmp/agent-skills --overwrite
+# replace existing installed skills (run per format)
+./tools/install-skills.sh claude /tmp/agent-skills --overwrite
+./tools/install-skills.sh codex /tmp/agent-skills --overwrite
 ```
 
 The script installs into format-specific folders under the base directory:
@@ -48,4 +49,4 @@ For example, `./tools/install-skills.sh all /tmp/agent-skills` installs to:
 If the destination already exists and is non-empty, the script exits unless `--overwrite` is provided.
 Existing empty destination directories are replaced during install.
 For `all`, the script validates both Claude and Codex targets first, then performs installs sequentially.
-So preflight validation is all-or-nothing, but `all --overwrite` is not a single atomic multi-format transaction if a later format install fails.
+Combined overwrite for `all` is intentionally blocked; run overwrite installs per format.

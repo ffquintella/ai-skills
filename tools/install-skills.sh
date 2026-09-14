@@ -26,6 +26,12 @@ if [[ "$TARGET_BASE" == "/" ]]; then
   exit 1
 fi
 
+if [[ "$FORMAT" == "all" && "$OVERWRITE" == "true" ]]; then
+  echo "Combined overwrite for 'all' is not supported."
+  echo "Run separate overwrite installs for claude and codex."
+  exit 1
+fi
+
 validate_format() {
   local format="$1"
   local source_dir="$ROOT_DIR/skills/$format"
@@ -82,11 +88,27 @@ install_format() {
     exit 1
   }
 
+  copy_tree() {
+    local source="$1"
+    local destination="$2"
+    (cd "$source" && tar -cf - .) | (cd "$destination" && tar -xf -)
+  }
+
   target_parent="$(dirname "$target_dir")"
   mkdir -p "$target_parent"
+
+  if [[ "$OVERWRITE" != "true" && -d "$target_dir" ]] && ! find "$target_dir" -mindepth 1 -print -quit | grep -q .; then
+    if ! copy_tree "$source_dir" "$target_dir"; then
+      echo "Failed to copy $format skills from $source_dir"
+      exit 1
+    fi
+    echo "Installed $format skills to $target_dir"
+    return 0
+  fi
+
   temp_target_dir="$(make_temp_dir "$target_parent" "skills.tmp")"
 
-  if ! (cd "$source_dir" && tar -cf - .) | (cd "$temp_target_dir" && tar -xf -); then
+  if ! copy_tree "$source_dir" "$temp_target_dir"; then
     rm -rf "$temp_target_dir"
     echo "Failed to copy $format skills from $source_dir"
     exit 1
