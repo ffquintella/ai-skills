@@ -12,6 +12,8 @@ instructions) and optional `references/` and `assets/`.
 
 ## Installing skills
 
+Full walkthrough (install, finishing the agent templates, invoking the router, tuning cost): [docs/USAGE.md](docs/USAGE.md).
+
 Run the installer from the repository root:
 
 ```bash
