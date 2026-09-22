@@ -90,16 +90,22 @@ If the router answers `inline`, the coordinator just does the work without spawn
 
 ## 4. Use cortex-memory
 
-Needs the Cortex MCP server (`hypermnesia-mcp`). If it is not installed yet:
+Needs the Cortex MCP server (`hypermnesia-mcp`). If it is not installed yet, configure
+the host you use:
 
 ```bash
 claude plugin marketplace add cdeust/Cortex
 claude plugin install hypermnesia-mcp
 ```
 
+```bash
+codex mcp add cortex --env CORTEX_MEMORY_STORE_BACKEND=sqlite -- hypermnesia-mcp
+```
+
 The skill loads when a task touches past-session context ("what did we decide about X",
 "have we hit this before"), when storing a decision or lesson, when recall returns stale
-results, or when Cortex itself needs diagnosing. Explicitly: `/cortex-memory cleanup`.
+results, or when Cortex itself needs diagnosing. Explicitly: `/cortex-memory cleanup`
+in Claude Code or `$cortex-memory cleanup` in Codex.
 
 It answers four questions:
 
@@ -110,7 +116,8 @@ It answers four questions:
 
 The store is a single local SQLite file at `~/.claude/methodology/memory.db`. The tool
 catalogue and the on-disk layout are in
-[claude/cortex-memory/references/tools.md](../claude/cortex-memory/references/tools.md).
+[claude/cortex-memory/references/tools.md](../claude/cortex-memory/references/tools.md)
+and [openai/cortex-memory/references/tools.md](../openai/cortex-memory/references/tools.md).
 
 ## 5. Update later
 
