@@ -88,7 +88,31 @@ If the router answers `inline`, the coordinator just does the work without spawn
 - Never spawn more agents than there are independent questions; dependent steps go to one agent.
 - Keep file-editing agents in the foreground (Claude) or with `workspace-write` sandbox (Codex); lock everything else to read-only.
 
-## 4. Update later
+## 4. Use cortex-memory
+
+Needs the Cortex MCP server (`hypermnesia-mcp`). If it is not installed yet:
+
+```bash
+claude plugin marketplace add cdeust/Cortex
+claude plugin install hypermnesia-mcp
+```
+
+The skill loads when a task touches past-session context ("what did we decide about X",
+"have we hit this before"), when storing a decision or lesson, when recall returns stale
+results, or when Cortex itself needs diagnosing. Explicitly: `/cortex-memory cleanup`.
+
+It answers four questions:
+
+1. **Search or not** — and with which tool (`recall` by default, `unified_search` across code and wiki, `recall_hierarchical` + `drill_down` for a broad topic, `get_causal_chain` for "what caused X").
+2. **Write or not** — decisions whose reason will not survive in the diff, yes; progress notes, no.
+3. **Cleanup** — `consolidate` weekly, scheduled as a task or a cron job, gated on `get_grooming_health`.
+4. **Removal** — `rate_memory` for bad ranking, a superseding `remember` for outdated facts, `forget` (soft) for wrong ones, `forget hard` only for data that must not exist on disk.
+
+The store is a single local SQLite file at `~/.claude/methodology/memory.db`. The tool
+catalogue and the on-disk layout are in
+[claude/cortex-memory/references/tools.md](../claude/cortex-memory/references/tools.md).
+
+## 5. Update later
 
 Pull the repository and run:
 

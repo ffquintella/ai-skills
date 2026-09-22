@@ -9,6 +9,7 @@ instructions) and optional `references/` and `assets/`.
 | Skill | Claude Code | OpenAI Codex |
 | --- | --- | --- |
 | **agent-router**: picks the agent, model tier and effort level for a task before delegating, with an escalation ladder | [claude/agent-router](claude/agent-router/SKILL.md) | [openai/agent-router](openai/agent-router/SKILL.md) |
+| **cortex-memory**: when to read and write Cortex persistent memory, which tool to search with, how to schedule consolidation, and when to correct or delete a memory | [claude/cortex-memory](claude/cortex-memory/SKILL.md) | — (the Cortex MCP runs on Codex too; the skill is written against the Claude Code plugin) |
 
 ## Installing skills
 
