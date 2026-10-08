@@ -68,8 +68,9 @@ The coordinator then:
    router: tier=routine agent=builder model=sonnet effort=high agents=1 verify=<test command>
    ```
 
-3. Writes a brief with objective, boundaries, verification command and output contract, and delegates.
-4. Checks the evidence (exit codes, failing tests). On failure it escalates one rung: scout -> builder -> architect -> architect on the frontier model. Two failures at the top means the task needs re-scoping and it asks you.
+3. Decides between one agent and several. It fans out only when the request holds 2 or more problems that are independent (no shared root cause, files or resources, and already localised); the split, per-domain briefs and integration then follow `dispatching-parallel-agents`, with each domain routed to its own tier.
+4. Writes a brief with objective, boundaries, verification command and output contract, and delegates.
+5. Checks the evidence (exit codes, failing tests). On failure it escalates one rung: scout -> builder -> architect -> architect on the frontier model. Two failures at the top means the task needs re-scoping and it asks you. After a fan-out it runs the full suite once more, since per-agent greens do not prove the combination.
 
 If the router answers `inline`, the coordinator just does the work without spawning anything.
 

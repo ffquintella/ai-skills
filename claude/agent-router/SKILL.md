@@ -1,6 +1,6 @@
 ---
 name: agent-router
-description: Decides which agent, Claude model and effort level should handle a task before any work starts, so the coordinator spends the fewest tokens that still hold quality. Use this every time the user asks to implement, fix, refactor, test, review, investigate, document or plan anything, even when the task looks small (the router may answer "inline" for trivial work). Also use it when unsure whether to delegate at all or how many agents to spawn.
+description: Decides which agent, Claude model and effort level should handle a task before any work starts, so the coordinator spends the fewest tokens that still hold quality. Use this every time the user asks to implement, fix, refactor, test, review, investigate, document or plan anything, even when the task looks small (the router may answer "inline" for trivial work). Also use it when unsure whether to delegate at all or how many agents to spawn, or when a request bundles several problems that might run in parallel (it decides whether to fan out and hands the split to dispatching-parallel-agents).
 argument-hint: [one-line task description]
 ---
 
@@ -65,11 +65,31 @@ Use `fable` only when the user asks for it by name or an `architect` run at `xhi
 failed on a problem that is genuinely frontier (novel algorithm, deep concurrency bug),
 not just large. It costs twice Opus.
 
-Never spawn more agents than there are independent questions. Anthropic's own
-research system scales as: simple fact 1 agent, comparison 2 to 4, and 10+ only for
-broad research. Dependent steps run in one agent sequentially, not in several.
+## Step 3: one agent or several
 
-## Step 3: write the delegation brief
+Default to one agent. Fan out only when the request holds 2 or more problems that pass
+all four checks:
+
+- each can be understood without the others;
+- fixing one cannot plausibly fix or change another (otherwise they share a root cause);
+- they do not edit the same files or share a resource (database, port, fixture, lock
+  file, generated output);
+- you already know what is broken; exploratory "something is wrong somewhere" work stays
+  in one agent or the coordinator.
+
+If any check fails, one agent works through the problems in order, or investigates the
+group first and splits afterwards. If all pass, hand the split to the
+`dispatching-parallel-agents` skill: it groups the problems into independent domains,
+writes one self-contained brief per domain and integrates the results. Route each domain
+through Steps 1 and 2 on its own, so a lookup domain gets `scout` while a sibling
+complex domain gets `architect`.
+
+Never spawn more agents than there are independent domains. Anthropic's own research
+system scales as: simple fact 1 agent, comparison 2 to 4, and 10+ only for broad
+research. For code changes cap at 3 to 5 concurrent agents and run the rest in waves.
+Dependent steps run in one agent sequentially, not in several.
+
+## Step 4: write the delegation brief
 
 Vague briefs make agents redo each other's work or misread the goal. Every brief has:
 
@@ -84,7 +104,10 @@ Preface the delegation with the routing decision so it is visible in the transcr
 router: tier=<tier> agent=<agent> model=<model> effort=<effort> agents=<n> verify=<command>
 ```
 
-## Step 4: verify, then escalate one rung at a time
+When fanning out, print one line per domain with `domain=<name>` added, all of them
+before the single message that dispatches the agents.
+
+## Step 5: verify, then escalate one rung at a time
 
 Read the agent's evidence (test output, build exit code). If it fails or the answer is
 shallow, do not retry at the same level: climb one rung.
@@ -96,6 +119,11 @@ scout (haiku) -> builder (sonnet high) -> architect (opus xhigh) -> architect wi
 Escalate with the failure attached to the brief, so the next agent does not rediscover
 it. Two failures at the top rung means the task, not the agent, needs re-scoping: stop
 and ask the user.
+
+After a fan-out, escalate each failing domain on its own and leave the green ones alone.
+Then run the full build and suite once (through `test-runner`): per-agent greens do not
+prove the combination. If the combined run fails, the domains were not independent;
+stop dispatching and debug the interaction in one agent.
 
 ## Coordinator habits that keep this cheap
 

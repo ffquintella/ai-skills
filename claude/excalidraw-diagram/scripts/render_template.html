@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+  #root { display: inline-block; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+  window.__moduleReady = false;
+  window.__renderComplete = false;
+  window.__renderError = null;
+  try {
+    const { exportToSvg } = await import("https://esm.sh/@excalidraw/excalidraw?bundle");
+
+    // Accepts a JSON string or an already parsed object. Resets the flags on every call.
+    window.renderDiagram = async (input) => {
+      window.__renderComplete = false;
+      window.__renderError = null;
+      try {
+        const data = typeof input === "string" ? JSON.parse(input) : input;
+        const appState = {
+          viewBackgroundColor: "#ffffff",
+          ...(data.appState || {}),
+          exportWithDarkMode: false,
+          exportBackground: true,
+        };
+        const svg = await exportToSvg({
+          elements: data.elements || [],
+          appState,
+          files: data.files || {},
+        });
+        const root = document.getElementById("root");
+        root.innerHTML = "";
+        root.appendChild(svg);
+        window.__renderComplete = true;
+        return {
+          success: true,
+          width: parseFloat(svg.getAttribute("width")),
+          height: parseFloat(svg.getAttribute("height")),
+        };
+      } catch (e) {
+        window.__renderError = String(e && e.message ? e.message : e);
+        window.__renderComplete = true;
+        return { success: false, error: window.__renderError };
+      }
+    };
+    window.__moduleReady = true;
+  } catch (e) {
+    window.__moduleError = String(e && e.message ? e.message : e);
+  }
+</script>
+</body>
+</html>
