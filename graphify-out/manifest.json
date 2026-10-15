@@ -1,0 +1,392 @@
+{
+  "claude/excalidraw-diagram/scripts/render_excalidraw.py": {
+    "mtime": 1791459250.5851579,
+    "seen": 1792088156.268373,
+    "ast_hash": "e87c36416e31b7308c268e60cb082bdd",
+    "semantic_hash": "e87c36416e31b7308c268e60cb082bdd"
+  },
+  "claude/rust-review/scripts/generate_sarif.py": {
+    "mtime": 1791459250.5873692,
+    "seen": 1792088156.268376,
+    "ast_hash": "65fb2bf8c41ee306cff9f95ce9ab9b22",
+    "semantic_hash": "65fb2bf8c41ee306cff9f95ce9ab9b22"
+  },
+  "claude/rust-review/scripts/probe.sh": {
+    "mtime": 1791459250.5876052,
+    "seen": 1792088156.268377,
+    "ast_hash": "448c0cbbec5e5c57a2967a4e8ca35212",
+    "semantic_hash": "448c0cbbec5e5c57a2967a4e8ca35212"
+  },
+  "claude/systematic-debugging/scripts/find-polluter.sh": {
+    "mtime": 1791459250.5889912,
+    "seen": 1792088156.268378,
+    "ast_hash": "eebd1c78e4d12f662d455eff782374d4",
+    "semantic_hash": "eebd1c78e4d12f662d455eff782374d4"
+  },
+  "install.sh": {
+    "mtime": 1792087647.717204,
+    "seen": 1792088156.268378,
+    "ast_hash": "a29a1972702286d5b8325aafbf5bf694",
+    "semantic_hash": "a29a1972702286d5b8325aafbf5bf694"
+  },
+  "openai/excalidraw-diagram/scripts/render_excalidraw.py": {
+    "mtime": 1791459250.5948322,
+    "seen": 1792088156.268379,
+    "ast_hash": "e87c36416e31b7308c268e60cb082bdd",
+    "semantic_hash": "e87c36416e31b7308c268e60cb082bdd"
+  },
+  "openai/rust-review/scripts/generate_sarif.py": {
+    "mtime": 1791459250.5977097,
+    "seen": 1792088156.268379,
+    "ast_hash": "65fb2bf8c41ee306cff9f95ce9ab9b22",
+    "semantic_hash": "65fb2bf8c41ee306cff9f95ce9ab9b22"
+  },
+  "openai/rust-review/scripts/probe.sh": {
+    "mtime": 1791459250.5979202,
+    "seen": 1792088156.26838,
+    "ast_hash": "448c0cbbec5e5c57a2967a4e8ca35212",
+    "semantic_hash": "448c0cbbec5e5c57a2967a4e8ca35212"
+  },
+  "openai/systematic-debugging/scripts/find-polluter.sh": {
+    "mtime": 1791459250.5989332,
+    "seen": 1792088156.26838,
+    "ast_hash": "eebd1c78e4d12f662d455eff782374d4",
+    "semantic_hash": "eebd1c78e4d12f662d455eff782374d4"
+  },
+  "README.md": {
+    "mtime": 1792087750.3728266,
+    "seen": 1792088156.2683809,
+    "ast_hash": "296ee94396e1bc1f43a640105ec71a4c",
+    "semantic_hash": "296ee94396e1bc1f43a640105ec71a4c"
+  },
+  "claude/agent-router/SKILL.md": {
+    "mtime": 1792087712.152297,
+    "seen": 1792088156.2683809,
+    "ast_hash": "6ceb45c6216aa4d4111f45c6445147aa",
+    "semantic_hash": "6ceb45c6216aa4d4111f45c6445147aa"
+  },
+  "claude/agent-router/assets/agents/architect.md": {
+    "mtime": 1789404157.885753,
+    "seen": 1792088156.2683818,
+    "ast_hash": "035a6e2f3d34d4d99e07aac57e565619",
+    "semantic_hash": "035a6e2f3d34d4d99e07aac57e565619"
+  },
+  "claude/agent-router/assets/agents/builder.md": {
+    "mtime": 1789404157.8831525,
+    "seen": 1792088156.2683818,
+    "ast_hash": "4c9e8c19b5452da54024205341853fcd",
+    "semantic_hash": "4c9e8c19b5452da54024205341853fcd"
+  },
+  "claude/agent-router/assets/agents/reviewer.md": {
+    "mtime": 1789404157.8883061,
+    "seen": 1792088156.2683818,
+    "ast_hash": "4b0d16e0596810925c62bef3658cdeb2",
+    "semantic_hash": "4b0d16e0596810925c62bef3658cdeb2"
+  },
+  "claude/agent-router/assets/agents/scout.md": {
+    "mtime": 1792087722.0744758,
+    "seen": 1792088156.268383,
+    "ast_hash": "3a9200bad19809d7cde6baf766aa78fc",
+    "semantic_hash": "3a9200bad19809d7cde6baf766aa78fc"
+  },
+  "claude/agent-router/assets/agents/test-runner.md": {
+    "mtime": 1789404157.8915172,
+    "seen": 1792088156.268383,
+    "ast_hash": "aedd608996bfe3aac0d1416637119faf",
+    "semantic_hash": "aedd608996bfe3aac0d1416637119faf"
+  },
+  "claude/agent-router/references/sources.md": {
+    "mtime": 1792087757.6525824,
+    "seen": 1792088156.268384,
+    "ast_hash": "c0926fa995c7e397371f45b93380ffd0",
+    "semantic_hash": "c0926fa995c7e397371f45b93380ffd0"
+  },
+  "claude/cortex-memory/SKILL.md": {
+    "mtime": 1790093387.538247,
+    "seen": 1792088156.268384,
+    "ast_hash": "670d808c6ab24eaf704900c6ef2ad86d",
+    "semantic_hash": "670d808c6ab24eaf704900c6ef2ad86d"
+  },
+  "claude/cortex-memory/references/tools.md": {
+    "mtime": 1790093430.474024,
+    "seen": 1792088156.268384,
+    "ast_hash": "a92529739fa1190f3670bc53be94e343",
+    "semantic_hash": "a92529739fa1190f3670bc53be94e343"
+  },
+  "claude/dispatching-parallel-agents/SKILL.md": {
+    "mtime": 1791459250.582752,
+    "seen": 1792088156.268385,
+    "ast_hash": "70ebea7ed21de98d0af66d67c3f06611",
+    "semantic_hash": "70ebea7ed21de98d0af66d67c3f06611"
+  },
+  "claude/dispatching-parallel-agents/references/example.md": {
+    "mtime": 1791459250.5830967,
+    "seen": 1792088156.268385,
+    "ast_hash": "3f24b018057729578d1d55db0723dabb",
+    "semantic_hash": "3f24b018057729578d1d55db0723dabb"
+  },
+  "claude/dispatching-parallel-agents/references/sources.md": {
+    "mtime": 1791459250.5833306,
+    "seen": 1792088156.2683861,
+    "ast_hash": "29f0aa1b4f8bb0bfe91edb4d8884c164",
+    "semantic_hash": "29f0aa1b4f8bb0bfe91edb4d8884c164"
+  },
+  "claude/excalidraw-diagram/SKILL.md": {
+    "mtime": 1791459250.583685,
+    "seen": 1792088156.2683861,
+    "ast_hash": "45cb2cf6043995d0898c7df59d9eac8a",
+    "semantic_hash": "45cb2cf6043995d0898c7df59d9eac8a"
+  },
+  "claude/excalidraw-diagram/references/color-palette.md": {
+    "mtime": 1791459250.5840275,
+    "seen": 1792088156.268387,
+    "ast_hash": "dda00497e6a04633f193ff3524e1e26c",
+    "semantic_hash": "dda00497e6a04633f193ff3524e1e26c"
+  },
+  "claude/excalidraw-diagram/references/element-templates.md": {
+    "mtime": 1791459250.5842872,
+    "seen": 1792088156.268387,
+    "ast_hash": "acd4f0cfa91fd1eb69bf8adc81454d4a",
+    "semantic_hash": "acd4f0cfa91fd1eb69bf8adc81454d4a"
+  },
+  "claude/excalidraw-diagram/references/json-schema.md": {
+    "mtime": 1791459250.5845225,
+    "seen": 1792088156.268387,
+    "ast_hash": "2d656e4e90acbf798daa2c4707ddda7b",
+    "semantic_hash": "2d656e4e90acbf798daa2c4707ddda7b"
+  },
+  "claude/excalidraw-diagram/references/sources.md": {
+    "mtime": 1791459250.5847516,
+    "seen": 1792088156.268388,
+    "ast_hash": "75c80f9c8af0a9131f337ceccf6cb69e",
+    "semantic_hash": "75c80f9c8af0a9131f337ceccf6cb69e"
+  },
+  "claude/excalidraw-diagram/scripts/render_template.html": {
+    "mtime": 1791459250.5853856,
+    "seen": 1792088156.268388,
+    "ast_hash": "c27db9d94a1203cb05d99fc7a1b78a9a",
+    "semantic_hash": "c27db9d94a1203cb05d99fc7a1b78a9a"
+  },
+  "claude/rust-review/SKILL.md": {
+    "mtime": 1791459250.585771,
+    "seen": 1792088156.2683892,
+    "ast_hash": "0a2ebd7abd0d6ed076619c3309796064",
+    "semantic_hash": "0a2ebd7abd0d6ed076619c3309796064"
+  },
+  "claude/rust-review/references/clusters.md": {
+    "mtime": 1791459250.586182,
+    "seen": 1792088156.2683892,
+    "ast_hash": "b963a0307156849cb02bb3f0598840df",
+    "semantic_hash": "b963a0307156849cb02bb3f0598840df"
+  },
+  "claude/rust-review/references/judges.md": {
+    "mtime": 1791459250.586431,
+    "seen": 1792088156.26839,
+    "ast_hash": "d6151768e9e3d9c6822450478f03ae6f",
+    "semantic_hash": "d6151768e9e3d9c6822450478f03ae6f"
+  },
+  "claude/rust-review/references/sources.md": {
+    "mtime": 1791459250.586666,
+    "seen": 1792088156.26839,
+    "ast_hash": "01b69b479c4739f92ff65cf8d226c8bc",
+    "semantic_hash": "01b69b479c4739f92ff65cf8d226c8bc"
+  },
+  "claude/rust-review/references/worker-brief.md": {
+    "mtime": 1791459250.5869036,
+    "seen": 1792088156.26839,
+    "ast_hash": "d5a248e3a7b7b5f1c320997eec1228ba",
+    "semantic_hash": "d5a248e3a7b7b5f1c320997eec1228ba"
+  },
+  "claude/systematic-debugging/SKILL.md": {
+    "mtime": 1791459250.587976,
+    "seen": 1792088156.268391,
+    "ast_hash": "85396efaef5445f3b38967251a83c0db",
+    "semantic_hash": "85396efaef5445f3b38967251a83c0db"
+  },
+  "claude/systematic-debugging/references/sources.md": {
+    "mtime": 1791459250.5883503,
+    "seen": 1792088156.268391,
+    "ast_hash": "5983a85fa93857ca72632f9e4b43dac2",
+    "semantic_hash": "5983a85fa93857ca72632f9e4b43dac2"
+  },
+  "claude/systematic-debugging/references/techniques.md": {
+    "mtime": 1791459250.588601,
+    "seen": 1792088156.2683918,
+    "ast_hash": "07a239953e210f83341092cf2c949850",
+    "semantic_hash": "07a239953e210f83341092cf2c949850"
+  },
+  "claude/test-driven-development/SKILL.md": {
+    "mtime": 1791459250.5893495,
+    "seen": 1792088156.2683918,
+    "ast_hash": "e9287b01730b58a125123389bc22e2b5",
+    "semantic_hash": "e9287b01730b58a125123389bc22e2b5"
+  },
+  "claude/test-driven-development/references/sources.md": {
+    "mtime": 1791459250.5897036,
+    "seen": 1792088156.2683918,
+    "ast_hash": "3adeca3566276ea6499fc0f24a66cea0",
+    "semantic_hash": "3adeca3566276ea6499fc0f24a66cea0"
+  },
+  "claude/test-driven-development/references/writing-good-tests.md": {
+    "mtime": 1791459250.5902514,
+    "seen": 1792088156.268393,
+    "ast_hash": "3ac5eb6189e82d9b8a8d05f013ade786",
+    "semantic_hash": "3ac5eb6189e82d9b8a8d05f013ade786"
+  },
+  "docs/USAGE.md": {
+    "mtime": 1792087750.3732188,
+    "seen": 1792088156.268393,
+    "ast_hash": "26991426e56c192a9803f97528d45916",
+    "semantic_hash": "26991426e56c192a9803f97528d45916"
+  },
+  "openai/agent-router/SKILL.md": {
+    "mtime": 1792087712.1769078,
+    "seen": 1792088156.268394,
+    "ast_hash": "95daad037dbf6060e9eda446dff32382",
+    "semantic_hash": "95daad037dbf6060e9eda446dff32382"
+  },
+  "openai/agent-router/references/sources.md": {
+    "mtime": 1792087757.6582496,
+    "seen": 1792088156.268394,
+    "ast_hash": "b7bfe2f63cbf18ae9f8ed3387898d663",
+    "semantic_hash": "b7bfe2f63cbf18ae9f8ed3387898d663"
+  },
+  "openai/cortex-memory/SKILL.md": {
+    "mtime": 1791459250.566545,
+    "seen": 1792088156.268395,
+    "ast_hash": "bc2838b167d430cc3a285ba3f67cbf34",
+    "semantic_hash": "bc2838b167d430cc3a285ba3f67cbf34"
+  },
+  "openai/cortex-memory/references/tools.md": {
+    "mtime": 1791459250.5668726,
+    "seen": 1792088156.268395,
+    "ast_hash": "a92529739fa1190f3670bc53be94e343",
+    "semantic_hash": "a92529739fa1190f3670bc53be94e343"
+  },
+  "openai/dispatching-parallel-agents/SKILL.md": {
+    "mtime": 1791459250.5922759,
+    "seen": 1792088156.268395,
+    "ast_hash": "842da9357591fa9fdd3cc46e035082f8",
+    "semantic_hash": "842da9357591fa9fdd3cc46e035082f8"
+  },
+  "openai/dispatching-parallel-agents/references/example.md": {
+    "mtime": 1791459250.592642,
+    "seen": 1792088156.2683961,
+    "ast_hash": "2991dd7762bf8656e6b84c346bd9082a",
+    "semantic_hash": "2991dd7762bf8656e6b84c346bd9082a"
+  },
+  "openai/dispatching-parallel-agents/references/sources.md": {
+    "mtime": 1791459250.5928679,
+    "seen": 1792088156.2683961,
+    "ast_hash": "29f0aa1b4f8bb0bfe91edb4d8884c164",
+    "semantic_hash": "29f0aa1b4f8bb0bfe91edb4d8884c164"
+  },
+  "openai/excalidraw-diagram/SKILL.md": {
+    "mtime": 1791459250.5932817,
+    "seen": 1792088156.268397,
+    "ast_hash": "1ba027e158cec5dd1d6df38ad93e5a36",
+    "semantic_hash": "1ba027e158cec5dd1d6df38ad93e5a36"
+  },
+  "openai/excalidraw-diagram/references/color-palette.md": {
+    "mtime": 1791459250.5936844,
+    "seen": 1792088156.268397,
+    "ast_hash": "dda00497e6a04633f193ff3524e1e26c",
+    "semantic_hash": "dda00497e6a04633f193ff3524e1e26c"
+  },
+  "openai/excalidraw-diagram/references/element-templates.md": {
+    "mtime": 1791459250.593936,
+    "seen": 1792088156.268397,
+    "ast_hash": "acd4f0cfa91fd1eb69bf8adc81454d4a",
+    "semantic_hash": "acd4f0cfa91fd1eb69bf8adc81454d4a"
+  },
+  "openai/excalidraw-diagram/references/json-schema.md": {
+    "mtime": 1791459250.5942118,
+    "seen": 1792088156.268398,
+    "ast_hash": "2d656e4e90acbf798daa2c4707ddda7b",
+    "semantic_hash": "2d656e4e90acbf798daa2c4707ddda7b"
+  },
+  "openai/excalidraw-diagram/references/sources.md": {
+    "mtime": 1791459250.5944493,
+    "seen": 1792088156.268398,
+    "ast_hash": "75c80f9c8af0a9131f337ceccf6cb69e",
+    "semantic_hash": "75c80f9c8af0a9131f337ceccf6cb69e"
+  },
+  "openai/excalidraw-diagram/scripts/render_template.html": {
+    "mtime": 1791459250.5950954,
+    "seen": 1792088156.268399,
+    "ast_hash": "c27db9d94a1203cb05d99fc7a1b78a9a",
+    "semantic_hash": "c27db9d94a1203cb05d99fc7a1b78a9a"
+  },
+  "openai/rust-review/SKILL.md": {
+    "mtime": 1791459250.5956397,
+    "seen": 1792088156.268399,
+    "ast_hash": "805353b0af1a653108f73b388d5ccb0c",
+    "semantic_hash": "805353b0af1a653108f73b388d5ccb0c"
+  },
+  "openai/rust-review/agents/openai.yaml": {
+    "mtime": 1791459250.59613,
+    "seen": 1792088156.2684002,
+    "ast_hash": "a6e5b862da7a3862659d5e70cbc725ee",
+    "semantic_hash": "a6e5b862da7a3862659d5e70cbc725ee"
+  },
+  "openai/rust-review/references/clusters.md": {
+    "mtime": 1791459250.596482,
+    "seen": 1792088156.2684002,
+    "ast_hash": "b963a0307156849cb02bb3f0598840df",
+    "semantic_hash": "b963a0307156849cb02bb3f0598840df"
+  },
+  "openai/rust-review/references/judges.md": {
+    "mtime": 1791459250.596731,
+    "seen": 1792088156.2684002,
+    "ast_hash": "d6151768e9e3d9c6822450478f03ae6f",
+    "semantic_hash": "d6151768e9e3d9c6822450478f03ae6f"
+  },
+  "openai/rust-review/references/sources.md": {
+    "mtime": 1791459250.5971355,
+    "seen": 1792088156.268401,
+    "ast_hash": "01b69b479c4739f92ff65cf8d226c8bc",
+    "semantic_hash": "01b69b479c4739f92ff65cf8d226c8bc"
+  },
+  "openai/rust-review/references/worker-brief.md": {
+    "mtime": 1791459250.5973876,
+    "seen": 1792088156.268401,
+    "ast_hash": "d5a248e3a7b7b5f1c320997eec1228ba",
+    "semantic_hash": "d5a248e3a7b7b5f1c320997eec1228ba"
+  },
+  "openai/systematic-debugging/SKILL.md": {
+    "mtime": 1791459250.598177,
+    "seen": 1792088156.268401,
+    "ast_hash": "deefe3f3a54752391c54a8e2aebf0726",
+    "semantic_hash": "deefe3f3a54752391c54a8e2aebf0726"
+  },
+  "openai/systematic-debugging/references/sources.md": {
+    "mtime": 1791459250.598456,
+    "seen": 1792088156.2684019,
+    "ast_hash": "188dc629288d09134e9709d4e4db6b61",
+    "semantic_hash": "188dc629288d09134e9709d4e4db6b61"
+  },
+  "openai/systematic-debugging/references/techniques.md": {
+    "mtime": 1791459250.598649,
+    "seen": 1792088156.2684019,
+    "ast_hash": "07a239953e210f83341092cf2c949850",
+    "semantic_hash": "07a239953e210f83341092cf2c949850"
+  },
+  "openai/test-driven-development/SKILL.md": {
+    "mtime": 1791459250.5992546,
+    "seen": 1792088156.268403,
+    "ast_hash": "6d570c3747d61a64e8564c2236b8cf16",
+    "semantic_hash": "6d570c3747d61a64e8564c2236b8cf16"
+  },
+  "openai/test-driven-development/references/sources.md": {
+    "mtime": 1791459250.599545,
+    "seen": 1792088156.268403,
+    "ast_hash": "3adeca3566276ea6499fc0f24a66cea0",
+    "semantic_hash": "3adeca3566276ea6499fc0f24a66cea0"
+  },
+  "openai/test-driven-development/references/writing-good-tests.md": {
+    "mtime": 1791459250.5997915,
+    "seen": 1792088156.268403,
+    "ast_hash": "3ac5eb6189e82d9b8a8d05f013ade786",
+    "semantic_hash": "3ac5eb6189e82d9b8a8d05f013ade786"
+  }
+}
