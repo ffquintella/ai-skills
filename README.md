@@ -17,6 +17,12 @@ instructions) and optional `references/` and `assets/`.
 | **excalidraw-diagram**: builds `.excalidraw` diagrams that explain a concept (patterns, evidence artifacts, palette), validates bindings and renders a PNG to review the layout; adapted from [coleam00/excalidraw-diagram-skill](https://github.com/coleam00/excalidraw-diagram-skill) | [claude/excalidraw-diagram](claude/excalidraw-diagram/SKILL.md) | [openai/excalidraw-diagram](openai/excalidraw-diagram/SKILL.md) |
 | **graphify** (external): maps a repository (code via tree-sitter, plus docs and media) into a knowledge graph queried with `query`/`path`/`explain`; `agent-router` and `scout` query it before grepping when `graphify-out/` exists. Not copied here: `install.sh` installs the [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) CLI and lets it write its own versioned skill | `graphify install` → `~/.claude/skills/graphify` | `graphify install --platform codex` → `~/.codex/skills/graphify` |
 
+## Working on this repository
+
+[AGENTS.md](AGENTS.md) (imported by [CLAUDE.md](CLAUDE.md)) tells Claude Code and Codex how to use
+Cortex memory here: when to `recall`, what is worth a `remember`, and why code questions go to
+the graphify graph instead.
+
 ## Installing skills
 
 Full walkthrough (install, finishing the agent templates, invoking the router, tuning cost): [docs/USAGE.md](docs/USAGE.md).
