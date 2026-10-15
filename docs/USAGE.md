@@ -91,16 +91,34 @@ If the router answers `inline`, the coordinator just does the work without spawn
 
 ## 4. Use cortex-memory
 
-Needs the Cortex MCP server (`hypermnesia-mcp`). If it is not installed yet, configure
-the host you use:
+Needs the Cortex MCP server (`hypermnesia-mcp`). `install.sh` sets it up together with
+the skill, and `--list` shows its state next to the skill (`plugin: installed`,
+`MCP: registered`):
+
+| Host | What the installer does | Update (`--update`) |
+| --- | --- | --- |
+| Claude Code | `claude plugin install hypermnesia-mcp --marketplace cdeust/Cortex --scope <user\|project>`; warns if the pre-4.15 `cortex` plugin is still installed | `claude plugin marketplace update cortex-plugins`, then `claude plugin update` |
+| Codex | `uv tool install --python 3.12 "hypermnesia-mcp[sqlite]"` (or `pipx` with the Python 3.10+ it found), then `codex mcp add cortex` with the command's **absolute path**; pins `CORTEX_MEMORY_STORE_BACKEND=sqlite` unless `~/.claude/methodology/backend.json` selects PostgreSQL | `uv tool upgrade hypermnesia-mcp` |
+
+Notes:
+
+- **Python**: the Claude plugin starts from any `python3` and provisions its own 3.12 on the first launch. On Codex, uv is told to use 3.12, because otherwise it takes the first `python3` on PATH (the system 3.9 on many Macs) and the install fails.
+- **First launch**: the plugin installs its runtime in the background; the tools appear in the session once that finishes. The store is created at `~/.claude/methodology/memory.db`.
+- **Scope**: Codex keeps MCP servers in `~/.codex/config.toml` only, so the registration is user-level even with `--project`.
+- **Skip it**: `--no-external` installs the skill without the plugin or server.
+
+Manual equivalent, if you install without the script:
 
 ```bash
-claude plugin marketplace add cdeust/Cortex
-claude plugin install hypermnesia-mcp
+claude plugin install hypermnesia-mcp --marketplace cdeust/Cortex
 ```
 
 ```bash
-codex mcp add cortex --env CORTEX_MEMORY_STORE_BACKEND=sqlite -- hypermnesia-mcp
+uv tool install --python 3.12 "hypermnesia-mcp[sqlite]"
+```
+
+```bash
+codex mcp add cortex --env CORTEX_MEMORY_STORE_BACKEND=sqlite -- "$(command -v hypermnesia-mcp || echo "$HOME/.local/bin/hypermnesia-mcp")"
 ```
 
 The skill loads when a task touches past-session context ("what did we decide about X",

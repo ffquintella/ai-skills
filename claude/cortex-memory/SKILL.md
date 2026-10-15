@@ -132,10 +132,13 @@ claude plugin marketplace add cdeust/Cortex
 claude plugin install hypermnesia-mcp
 ```
 
-Requirements: Python 3.10+ and `uv`/`uvx` on PATH. First use creates
-`~/.claude/methodology/memory.db` and downloads the embedding and reranking models once;
-after that it runs offline. An existing PostgreSQL configuration is detected and kept, never
-silently downgraded.
+Requirements: a `python3` on PATH, any version, plus network on the first launch. The
+plugin's launcher re-executes under a Python 3.12 it provisions itself (with `uv`, or a
+pinned `uv` it installs through pip) when `python3` is older than 3.10. The first
+launch installs that runtime in the background — the tools appear once it finishes —
+creates `~/.claude/methodology/memory.db` and downloads the embedding and reranking
+models once; after that it runs offline. An existing PostgreSQL configuration is detected
+and kept, never silently downgraded.
 
 Other stdio MCP hosts run the same PyPI package — the `[sqlite]` extra enables sqlite-vec
 vector search:
@@ -146,12 +149,28 @@ uvx --from "hypermnesia-mcp[sqlite]" hypermnesia-mcp
 
 Codex has a native plugin exposing a 10-tool `lean` surface
 (`remember`, `recall`, `unified_search`, `recall_hierarchical`, `consolidate`,
-`memory_stats`, `check_setup`, `wiki_read`, `wiki_list`, `query_methodology`); the direct
-registration below gives it all 57 tools instead:
+`memory_stats`, `check_setup`, `wiki_read`, `wiki_list`, `query_methodology`); direct
+registration gives it all 57 tools instead. Nothing installs the `hypermnesia-mcp`
+command for it, so install the package first, then register it by **absolute path**:
+Codex may start servers without `~/.local/bin` on PATH.
 
 ```bash
-codex mcp add cortex --env CORTEX_MEMORY_STORE_BACKEND=sqlite -- hypermnesia-mcp
+uv tool install --python 3.12 "hypermnesia-mcp[sqlite]"
 ```
+
+```bash
+codex mcp add cortex --env CORTEX_MEMORY_STORE_BACKEND=sqlite -- "$(command -v hypermnesia-mcp || echo "$HOME/.local/bin/hypermnesia-mcp")"
+```
+
+Pin `--python 3.12`: without it uv takes the first `python3` on PATH, and on macOS that is
+often the system 3.9, which fails to resolve (Cortex needs 3.10+). Drop the `--env` when
+`~/.claude/methodology/backend.json` selects PostgreSQL, so Codex shares that store
+instead of opening a separate SQLite file. `uv tool upgrade hypermnesia-mcp` updates it;
+the registration does not change.
+
+The `install.sh` of the ai-skills repository runs both installs (plugin for Claude Code,
+package plus registration for Codex) when it installs this skill; `--no-external` skips
+them.
 
 If a machine still has the pre-4.15 plugin identity, the rename is
 `claude plugin uninstall cortex` then `claude plugin install hypermnesia-mcp`; memories and
@@ -169,7 +188,8 @@ Common failures on the SQLite default:
 | Symptom | Likely cause |
 | --- | --- |
 | No `mcp__plugin_hypermnesia-mcp_cortex__*` tools in the session | Plugin not installed, or the session predates the install — restart it |
-| Server fails to start | `uv`/`uvx` or Python 3.10+ missing from PATH, or the post-install dependency step never completed: re-run `bash <plugin-dir>/scripts/install-plugin.sh` |
+| Server fails to start (Claude Code) | No `python3` on PATH, no network on the first launch, or the runtime install never completed: re-run `bash <plugin-dir>/scripts/install-plugin.sh` |
+| Codex: `cortex` server not found / spawn error | It was registered as the bare `hypermnesia-mcp` and Codex's PATH lacks `~/.local/bin`: `codex mcp remove cortex`, then register the absolute path as above |
 | `memory_stats` errors | Permissions on `~/.claude/methodology`, or a corrupt `memory.db` |
 | Huge `memory.db-wal`, slow recall | A WAL that never checkpointed, or a store that has not been consolidated — run `consolidate` |
 | Writes land somewhere unexpected | Backend mismatch: check `~/.claude/methodology/backend.json` and any `CORTEX_MEMORY_STORE_BACKEND` / `CORTEX_BACKEND` / `DATABASE_URL` in the environment, which override it |
