@@ -95,3 +95,13 @@ when models change. Official Anthropic material first, independent articles afte
   https://inworld.ai/resources/ai-model-routing-cost-reduction
   Reports 40% to 85% bill reductions from tuned routing, because most traffic never
   needed a frontier model. Savings evaporate if the router under-sizes hard prompts.
+
+## Code graph lookups
+
+- **graphify** (Graphify-Labs) - https://github.com/Graphify-Labs/graphify, v0.9.91,
+  read 2026-10-15. CLI `query`, `explain`, `path`, `affected` and `update` against
+  `graphify-out/graph.json`; edges tagged `EXTRACTED` or `INFERRED`; exit 3 for an
+  ambiguous name, 4 for no match (checked against a locally built graph). The README
+  warns against stacking two unconditional "query the graph first" instruction blocks
+  when an MCP graph is also connected, which is why the router picks one graph per
+  project.

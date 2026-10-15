@@ -65,6 +65,41 @@ Use `fable` only when the user asks for it by name or an `architect` run at `xhi
 failed on a problem that is genuinely frontier (novel algorithm, deep concurrency bug),
 not just large. It costs twice Opus.
 
+### Lookups: query the code graph first when one exists
+
+[graphify](https://github.com/Graphify-Labs/graphify) (installed by `install.sh` as an
+external skill) keeps a knowledge graph of the repository in `graphify-out/graph.json`.
+Before routing a lookup, check for that file (one `ls`, inline).
+
+- **Graph present**: route to `scout` as usual and say in the brief that the graph comes
+  first. Pick the command by question shape, all against the local graph:
+
+  | Question | Command |
+  | --- | --- |
+  | "How does Y work", broad context | `graphify query "<question>" --budget 1500` |
+  | One symbol: what it is, who uses it | `graphify explain "<Symbol>"` |
+  | "How does A reach B" | `graphify path "<A>" "<B>"` |
+  | "Which files use Z", impact of a change | `graphify affected "<Z>"` |
+
+  `scout` then opens only the `path:line` ranges the graph names, to confirm. Edges
+  tagged `EXTRACTED` come straight from the source; `INFERRED` edges are graphify's
+  resolution and must be confirmed in the code before they are reported as fact. Exit
+  code 3 means an ambiguous name (retry with `<path>::<symbol>` from the listed
+  candidates), 4 means no node matched: fall back to grep and say so.
+- **Graph stale** (older than the last commit, or the files in question have
+  uncommitted edits): run `graphify update .` inline first. It re-parses code only,
+  locally, with no LLM call. `scout` never builds or updates the graph itself.
+- **No graph**: plain grep and reads. Do not build a graph for a single lookup; when
+  the user keeps asking architecture questions about a large repository, suggest
+  building one (`/graphify .`) and let them decide, since the docs/media pass calls a
+  model.
+- **Requests about the graph itself** ("map this repo", `/graphify`, `--update`,
+  exports, hooks) are not lookups: the coordinator follows the graphify skill directly.
+
+If the project also uses Cortex's code graph (`unified_search`, see the
+`cortex-memory` skill), use one per project: graphify when `graphify-out/` exists,
+otherwise Cortex. Do not query both for the same question.
+
 ## Step 3: one agent or several
 
 Default to one agent. Fan out only when the request holds 2 or more problems that pass

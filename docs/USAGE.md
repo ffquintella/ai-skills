@@ -120,7 +120,50 @@ catalogue and the on-disk layout are in
 [claude/cortex-memory/references/tools.md](../claude/cortex-memory/references/tools.md)
 and [openai/cortex-memory/references/tools.md](../openai/cortex-memory/references/tools.md).
 
-## 5. Update later
+## 5. Use graphify
+
+[graphify](https://github.com/Graphify-Labs/graphify) turns a repository into a
+knowledge graph (`graphify-out/graph.json`, `GRAPH_REPORT.md`, `graph.html`). Code is
+parsed locally with tree-sitter, without any LLM; docs, PDFs, images and video go
+through a model pass.
+
+It is an **external** skill: the repo keeps no copy, because its 700-line skill is
+generated per assistant and versioned with the CLI (releases ship almost daily). The
+installer handles it like the others in the menu:
+
+| Situation | What `install.sh` does |
+| --- | --- |
+| CLI missing | `uv tool install graphifyy` (or `pipx install graphifyy`); warns and skips if neither uv nor pipx exists |
+| Skill missing | `graphify install --platform claude` (Claude Code) or `--platform codex` (Codex, writes `~/.codex/skills/graphify`) |
+| `--update` | `uv tool upgrade graphifyy` (or `pipx upgrade`), then reinstalls the skill |
+| `--list` | Compares the skill's `.graphify_version` stamp with `graphify --version` |
+| `--project DIR` | `graphify install --project` inside `DIR`. graphify has no skill-only project install, so this **also** writes the always-on block: `CLAUDE.md` plus PreToolUse hooks in `.claude/settings.json`, or `AGENTS.md` plus `.codex/hooks.json`. Remove with `graphify uninstall --project` |
+
+At user scope, `graphify install` also adds a short `## graphify` registration block to
+`~/.claude/CLAUDE.md`. The graphify CLI refreshes user-scope skills on its own after a
+package upgrade; project-scope copies only refresh through `--update`.
+
+Build the first graph from your assistant:
+
+- **Claude Code**: `/graphify .`
+- **Codex**: `$graphify .` (needs `multi_agent = true` under `[features]` in `~/.codex/config.toml` for parallel extraction)
+
+After that, `agent-router` routes lookups to `scout` with a graph-first brief
+(`graphify query`, `explain`, `path`, `affected`), refreshes a stale graph with
+`graphify update .` (code only, no LLM), and falls back to grep when no node matches.
+If a project also uses Cortex's code graph, the router uses graphify when
+`graphify-out/` exists and Cortex otherwise.
+
+Optional, per project: `graphify hook install` adds a git post-commit hook that
+rebuilds the code graph after every commit.
+
+`scout` agents already copied into `.claude/agents/` or `.codex/agents/` are never
+overwritten, so copy the graph-first paragraph from
+[claude/agent-router/assets/agents/scout.md](../claude/agent-router/assets/agents/scout.md)
+or [openai/agent-router/assets/agents/scout.toml](../openai/agent-router/assets/agents/scout.toml)
+into your existing `scout` by hand.
+
+## 6. Update later
 
 Pull the repository and run:
 
@@ -128,4 +171,4 @@ Pull the repository and run:
 ./install.sh --all --update
 ```
 
-Agent templates you have already customised are not touched; only the skill folders are replaced.
+Agent templates you have already customised are not touched; only the skill folders are replaced. For graphify this also upgrades the CLI.
