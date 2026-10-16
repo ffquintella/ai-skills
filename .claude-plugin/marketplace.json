@@ -1,0 +1,20 @@
+{
+  "name": "ai-skills",
+  "description": "Marketplace for the ai-skills plugin",
+  "owner": {
+    "name": "Felipe F Quintella",
+    "url": "https://github.com/ffquintella"
+  },
+  "plugins": [
+    {
+      "name": "ai-skills",
+      "description": "Development workflow skills for Claude Code: design, planning, TDD, debugging, agent routing, code review, verification and branch finishing, with a session-start bootstrap",
+      "version": "0.2.0",
+      "source": "./",
+      "author": {
+        "name": "Felipe F Quintella",
+        "url": "https://github.com/ffquintella"
+      }
+    }
+  ]
+}

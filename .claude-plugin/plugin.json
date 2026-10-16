@@ -1,0 +1,13 @@
+{
+  "name": "ai-skills",
+  "version": "0.2.0",
+  "description": "Development workflow skills for Claude Code: design, planning, TDD, debugging, agent routing, code review, verification and branch finishing, with a session-start bootstrap",
+  "author": {
+    "name": "Felipe F Quintella",
+    "url": "https://github.com/ffquintella"
+  },
+  "homepage": "https://github.com/ffquintella/ai-skills",
+  "repository": "https://github.com/ffquintella/ai-skills",
+  "keywords": ["skills", "workflow", "tdd", "debugging", "planning", "code-review", "agents"],
+  "skills": "./claude/"
+}

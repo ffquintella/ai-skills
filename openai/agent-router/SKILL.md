@@ -1,6 +1,6 @@
 ---
 name: agent-router
-description: Decides which Codex subagent, OpenAI model and reasoning effort should handle a task before any work starts, so the coordinator spends the fewest tokens that still hold quality. Use this every time the user asks to implement, fix, refactor, test, review, investigate, document or plan anything, even when the task looks small (the router may answer "inline" for trivial work). Also use it when unsure whether to delegate at all or how many subagents to spawn, or when a request bundles several problems that might run in parallel (it decides whether to fan out and hands the split to dispatching-parallel-subagents).
+description: Decides which Codex subagent, OpenAI model and reasoning effort should handle a task before any work starts, so the coordinator spends the fewest tokens that still hold quality. Use this every time the user asks to implement, fix, refactor, test, review, investigate, document or plan anything, even when the task looks small (the router may answer "inline" for trivial work). Also use it when unsure whether to delegate at all or how many subagents to spawn, or when a request bundles several problems that might run in parallel (it decides whether to fan out and hands the split to dispatching-parallel-agents).
 ---
 
 # Agent router (OpenAI Codex edition)
@@ -117,7 +117,7 @@ pass all four checks:
 
 If any check fails, one subagent works through the problems in order, or investigates
 the group first and splits afterwards. If all pass, hand the split to the
-`dispatching-parallel-subagents` skill: it groups the problems into independent domains,
+`dispatching-parallel-agents` skill: it groups the problems into independent domains,
 writes one self-contained brief per domain and integrates the results. Route each domain
 through Steps 1 and 2 on its own, so a lookup domain gets `scout` while a sibling
 complex domain gets `architect`.

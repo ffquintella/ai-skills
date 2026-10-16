@@ -10,12 +10,13 @@ From the repository root:
 ./install.sh
 ```
 
-The installer walks through four questions:
+The installer walks through these questions:
 
 1. **Scope**: user level (`~/.claude/skills`, `~/.agents/skills`) or a project directory.
-2. **Action**: *install* adds missing skills and leaves installed ones alone; *update* also overwrites installed skills with the repo version.
-3. **Skills**: type the numbers you want, or `a` for all. Each line shows the vendor and the status (`installed`, `update available`, `not installed`).
-4. **Agent templates**: whether to copy the agents under `assets/agents/` into `.claude/agents/` (Claude) or `.codex/agents/` (Codex). Existing agents are never overwritten.
+2. **Method**: the ai-skills plugin (default; see below) or individual skills. The plugin path asks only for the action and the agent templates.
+3. **Action**: *install* adds missing skills and leaves installed ones alone; *update* also overwrites installed skills with the repo version.
+4. **Skills**: type the numbers you want, or `a` for all. Each line shows the vendor and the status (`installed`, `update available`, `not installed`).
+5. **Agent templates**: whether to copy the agents under `assets/agents/` into `.claude/agents/` (Claude) or `.codex/agents/` (Codex). Existing agents are never overwritten.
 
 Vendors that are not installed on the machine are skipped automatically.
 
@@ -38,6 +39,28 @@ Non-interactive examples:
 ```
 
 After installing, start a new Claude Code or Codex session so the skills list reloads.
+
+### Plugin or copied skills
+
+| | Plugin (`--plugin`) | Copied skills (`--skills`, default for `--all`) |
+| --- | --- | --- |
+| What you get | Every skill, as `ai-skills:<name>` on Claude Code | The skills you pick, as `<name>` |
+| Bootstrap | Claude Code injects `using-ai-skills` at every session start, `/clear` and compaction | None; `using-ai-skills` loads only when its description matches |
+| Updates | Claude Code reads this checkout live; Codex reinstalls the committed tree with `--update` | `--update` re-copies changed skills |
+| Scope | Claude Code: user or project. Codex: user only | User or project |
+
+Pick one. With both, every skill is listed twice; the installer prints the copies to remove.
+Codex installs what is committed, so commit before `./install.sh --plugin --update`, and
+bump the version (`scripts/bump-version.sh`) when the change should replace an installed
+copy.
+
+```bash
+./install.sh --plugin
+```
+
+```bash
+./install.sh --plugin --update --vendor openai
+```
 
 ## 2. Finish the agent templates
 
@@ -181,7 +204,25 @@ overwritten, so copy the graph-first paragraph from
 or [openai/agent-router/assets/agents/scout.toml](../openai/agent-router/assets/agents/scout.toml)
 into your existing `scout` by hand.
 
-## 6. Update later
+## 6. The development workflow
+
+With the plugin (or all skills) installed, new work follows one chain, each step a skill:
+
+1. `brainstorming`: questions one at a time, 2-3 approaches, an approved spec in `docs/specs/`.
+2. `writing-plans`: bite-sized tasks with exact paths, failing tests and an `agent-router` tier, saved to `docs/plans/`.
+3. `using-git-worktrees`: an isolated workspace with a green baseline.
+4. `subagent-driven-development` (agents) or `executing-plans` (inline): each task through `test-driven-development`, then `requesting-code-review`; feedback is handled with `receiving-code-review`.
+5. `verification-before-completion`: fresh evidence before any "done".
+6. `finishing-a-development-branch`: merge, PR, keep or discard.
+
+Bugs start at `systematic-debugging` instead. `using-ai-skills` holds the full
+situation-to-skill table. On Codex, the agent-driven steps need `multi_agent = true` under
+`[features]` in `~/.codex/config.toml`; without it, use `executing-plans`.
+
+`subagent-driven-development` keeps its workspace in `.ai-skills/sdd/` inside the project;
+add `.ai-skills/` to the project's `.gitignore`.
+
+## 7. Update later
 
 Pull the repository and run:
 
@@ -190,3 +231,6 @@ Pull the repository and run:
 ```
 
 Agent templates you have already customised are not touched; only the skill folders are replaced. For graphify this also upgrades the CLI.
+
+With the plugin, use `./install.sh --plugin --update`: it refreshes the Claude Code
+marketplace and plugin, and reinstalls the Codex plugin from the current commit.

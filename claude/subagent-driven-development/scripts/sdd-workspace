@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Resolve and create the directory that holds one plan's short-lived
+# artifacts (task briefs, implementer reports, review packages, the progress
+# ledger) and print its absolute path.
+#
+# Layout: <repo-root>/.ai-skills/sdd/<plan-basename>/. One directory per plan,
+# so a second plan in the same working tree never reads or overwrites the
+# first one's ledger. Two plans with the same file name (docs/a/plan.md and
+# docs/b/plan.md) are told apart by a plan-path marker inside each directory;
+# the later one gets the parent directory name appended (and a counter if
+# that collides too).
+#
+# The directory lives in the working tree, not under .git/, because agents
+# are usually not allowed to write under .git/ and the implementer has to
+# write its report file. A .gitignore containing "*" is created at
+# .ai-skills/sdd/ so nothing in it shows up in `git status` or gets committed.
+# It is only created when missing, so a project can replace it with its own.
+#
+# Usage: sdd-workspace PLAN_FILE
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: sdd-workspace PLAN_FILE" >&2
+  exit 2
+fi
+
+plan=$1
+[ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
+
+slug=$(basename "$plan" .md)
+case "$slug" in
+  ""|.|..) echo "cannot derive a workspace name from: $plan" >&2; exit 2 ;;
+esac
+
+root=$(CDPATH='' cd -- "$(git rev-parse --show-toplevel)" && pwd -P)
+base="$root/.ai-skills/sdd"
+
+# The plan's identity: repo-relative when it lives in the repo, absolute otherwise.
+plan_dir=$(CDPATH='' cd -- "$(dirname "$plan")" && pwd -P)
+plan_abs="$plan_dir/$(basename "$plan")"
+case "$plan_abs" in
+  "$root"/*) plan_id=${plan_abs#"$root"/} ;;
+  *)         plan_id=$plan_abs ;;
+esac
+
+# True when directory $1 belongs to this plan. A directory without a marker is
+# new, so this plan claims it by writing one.
+owns() {
+  if [ -e "$1/plan-path" ]; then
+    [ "$(cat "$1/plan-path")" = "$plan_id" ]
+  else
+    mkdir -p "$1"
+    printf '%s\n' "$plan_id" > "$1/plan-path"
+  fi
+}
+
+dir="$base/$slug"
+if ! owns "$dir"; then
+  parent=$(basename "$plan_dir")
+  dir="$base/$slug-$parent"
+  if ! owns "$dir"; then
+    n=2
+    while ! owns "$base/$slug-$parent-$n"; do n=$((n + 1)); done
+    dir="$base/$slug-$parent-$n"
+  fi
+fi
+
+[ -e "$base/.gitignore" ] || printf '*\n' > "$base/.gitignore"
+CDPATH='' cd -- "$dir" && pwd

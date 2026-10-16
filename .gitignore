@@ -5,3 +5,6 @@ graphify-out/.graphify_python
 graphify-out/.graphify_root
 graphify-out/.graphify_analysis.json
 graphify-out/cost.json
+
+# subagent-driven-development workspace (scripts/sdd-workspace)
+.ai-skills/

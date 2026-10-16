@@ -1,5 +1,5 @@
 ---
-name: dispatching-parallel-subagents
+name: dispatching-parallel-agents
 description: Decides whether several problems can be worked on at the same time by separate subagents, and if so how to split them, brief each agent, dispatch them in one message and integrate the results. Use when there are 2 or more independent failures, bugs or investigations (different test files failing for unrelated reasons, separate subsystems broken, several unrelated questions) and no shared state between them. Do not use for related failures, exploratory debugging or work that edits the same files. Complements agent-router, which picks the tier of each agent.
 ---
 

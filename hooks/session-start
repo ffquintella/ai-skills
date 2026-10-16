@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# SessionStart hook of the ai-skills Claude Code plugin: injects the
+# using-ai-skills skill so the session knows the skills exist and checks for one
+# before acting. Runs on startup, /clear and compaction (see hooks.json).
+#
+# Uses only bash builtins (no dirname, cat, sed): a SessionStart hook can start
+# with an empty PATH (anthropics/claude-code#43127). Adapted from the
+# session-start hook of obra/superpowers.
+
+set -euo pipefail
+
+case "$0" in
+  */*) HOOK_DIR="$(cd "${0%/*}" && pwd)" ;;
+  *) HOOK_DIR="$(pwd)" ;;
+esac
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$HOOK_DIR/.." && pwd)}"
+skill_md="$PLUGIN_ROOT/claude/using-ai-skills/SKILL.md"
+
+if [ -r "$skill_md" ]; then
+  content="$(<"$skill_md")"
+  # Drop the YAML frontmatter: the description is for skill discovery, not for
+  # the injected copy.
+  if [ "${content:0:4}" = "---"$'\n' ]; then
+    rest="${content#---$'\n'}"
+    content="${rest#*$'\n'---$'\n'}"
+  fi
+else
+  content="The ai-skills plugin could not read $skill_md. Its skills are still available through the Skill tool as ai-skills:<name>."
+fi
+
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+context="The ai-skills plugin is installed. Its bootstrap skill, ai-skills:using-ai-skills, follows in full; load every other skill with the Skill tool.\n\n$(escape_for_json "$content")"
+
+# printf, not a heredoc: heredocs can hang in bash 5.3+ hooks
+# (obra/superpowers#571).
+printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$context"

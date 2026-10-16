@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Write a review package (commit list, stat summary, and the net diff with 10
+# lines of context) to a file the reviewer reads in one call, so the diff never
+# enters the coordinator's context. Use the BASE recorded before the task
+# started, never HEAD~1: HEAD~1 silently drops all but the last commit of a
+# multi-commit task.
+#
+# Usage: review-package PLAN_FILE BASE HEAD [OUTFILE]
+# Default OUTFILE: <workspace>/review-<base7>..<head7>.diff (named per range, so
+# a re-review after a fix round gets a new file).
+# Exit: 2 usage or bad ref, 3 HEAD is not a descendant of BASE or the range is empty.
+# Prints: wrote <path>: <n> commit(s), <bytes> bytes
+set -euo pipefail
+
+if [ $# -lt 3 ] || [ $# -gt 4 ]; then
+  echo "usage: review-package PLAN_FILE BASE HEAD [OUTFILE]" >&2
+  exit 2
+fi
+
+plan=$1
+base=$2
+head=$3
+[ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
+
+git rev-parse --verify --quiet "$base" >/dev/null || { echo "bad BASE: $base" >&2; exit 2; }
+git rev-parse --verify --quiet "$head" >/dev/null || { echo "bad HEAD: $head" >&2; exit 2; }
+
+# A HEAD on the wrong branch gives an empty or unrelated range, which would
+# silently produce a bogus package.
+git merge-base --is-ancestor "$base" "$head" || { echo "HEAD is not a descendant of BASE: ${base}..${head}" >&2; exit 3; }
+[ "$(git rev-list --count "${base}..${head}")" -gt 0 ] || { echo "empty commit range: ${base}..${head}" >&2; exit 3; }
+
+if [ $# -eq 4 ]; then
+  out=$4
+else
+  dir=$("${BASH:-bash}" "$(cd "$(dirname "$0")" && pwd)/sdd-workspace" "$plan")
+  out="$dir/review-$(git rev-parse --short "$base")..$(git rev-parse --short "$head").diff"
+fi
+
+{
+  echo "# Review package: ${base}..${head}"
+  echo
+  echo "## Commits"
+  git log --oneline "${base}..${head}"
+  echo
+  echo "## Files changed"
+  git diff --stat "${base}..${head}"
+  echo
+  echo "## Diff"
+  git diff -U10 "${base}..${head}"
+} > "$out"
+
+echo "wrote ${out}: $(git rev-list --count "${base}..${head}") commit(s), $(wc -c < "$out" | tr -d ' ') bytes"

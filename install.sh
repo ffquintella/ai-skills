@@ -12,6 +12,9 @@
 #   ./install.sh --list           show skills and their install status, then exit
 #   ./install.sh --no-external    skip third-party software: the graphify CLI
 #                                 and the Cortex plugin / MCP server
+#   ./install.sh --plugin         install the ai-skills plugin (all skills plus the
+#                                 session-start bootstrap) instead of copying skills
+#   ./install.sh --skills         copy individual skills (default without a terminal)
 #
 # Works with macOS bash 3.2 (no associative arrays, no mapfile).
 
@@ -41,6 +44,13 @@ COPY_AGENTS="ask"       # ask | yes | no
 LIST_ONLY="no"
 WITH_EXTERNAL="yes"
 NONINTERACTIVE="no"
+METHOD="ask"            # ask | plugin | skills
+
+# The repository is also a plugin for both hosts: .claude-plugin/ serves claude/
+# plus hooks/ (SessionStart injects using-ai-skills), .codex-plugin/ serves
+# openai/. Both marketplaces are named like the plugin.
+PLUGIN_ID="ai-skills@ai-skills"
+PLUGIN_MARKETPLACE="ai-skills"
 
 # ---------------------------------------------------------------- helpers ---
 say()  { printf '%s\n' "$*"; }
@@ -50,7 +60,7 @@ warn() { printf '  \033[33m%s\033[0m\n' "$*"; }
 err()  { printf '\033[31m%s\033[0m\n' "$*" >&2; }
 die()  { err "$*"; exit 1; }
 
-usage() { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
+usage() { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
 
 vendor_label() {
   case "$1" in
@@ -517,6 +527,124 @@ install_agents() {
   fi
 }
 
+# ------------------------------------------------------ the ai-skills plugin ---
+# Claude Code reads a directory marketplace live from this checkout, so edits
+# show up on the next session. Codex copies the committed tree into
+# ~/.codex/plugins/cache/ai-skills/ai-skills/<version>: uncommitted changes are
+# not installed, and `codex plugin add` again is how it updates. Codex plugins
+# are user-level only and carry no hook; the skills rely on their descriptions.
+
+# installed | missing | no-cli
+plugin_status() {
+  case "$1" in
+    claude)
+      command -v claude >/dev/null 2>&1 || { echo "no-cli"; return; }
+      case "$(claude_in_scope plugin list --json 2>/dev/null || true)" in
+        *"\"$PLUGIN_ID\""*) echo "installed" ;;
+        *) echo "missing" ;;
+      esac ;;
+    openai)
+      command -v codex >/dev/null 2>&1 || { echo "no-cli"; return; }
+      if codex plugin list 2>/dev/null | grep -q "^$PLUGIN_ID  *installed"; then echo "installed"; else echo "missing"; fi ;;
+  esac
+}
+
+# Copied skills that the plugin would duplicate (same name, also listed as
+# ai-skills:<name>). Reported, never deleted.
+plugin_duplicates() {
+  local vendor="$1" root d dups=""
+  root="$(skills_root "$vendor")"
+  for d in "$REPO_DIR/$vendor"/*/; do
+    [ -f "${d}SKILL.md" ] || continue
+    [ -d "$root/$(basename "$d")" ] && dups="$dups $(basename "$d")"
+  done
+  if [ -n "$dups" ]; then
+    warn "These skills are also copied into $root and will show up twice, once from the plugin:"
+    warn " $dups"
+    warn "  Remove the copies once the plugin works, e.g.: cd \"$root\" && rm -rf$dups"
+  fi
+}
+
+install_plugin_claude() {
+  local status
+  status="$(plugin_status claude)"
+  if [ "$status" = "no-cli" ]; then
+    warn "Claude Code: the claude CLI is not on PATH, so the plugin was not installed. Run:"
+    warn "  claude plugin marketplace add \"$REPO_DIR\" && claude plugin install $PLUGIN_ID --scope $SCOPE"
+    return 0
+  fi
+  if ! claude_in_scope plugin marketplace list --json 2>/dev/null | grep -q "\"name\": *\"$PLUGIN_MARKETPLACE\""; then
+    info "Claude Code: adding this checkout as the '$PLUGIN_MARKETPLACE' marketplace (scope $SCOPE)"
+    claude_in_scope plugin marketplace add "$REPO_DIR" --scope "$SCOPE" 2>&1 | sed 's/^/    /' \
+      || { warn "Claude Code: 'claude plugin marketplace add' failed; see the output above."; return 0; }
+  fi
+  case "$status" in
+    installed)
+      if [ "$MODE" = "update" ]; then
+        info "Claude Code: updating $PLUGIN_ID"
+        claude_in_scope plugin marketplace update "$PLUGIN_MARKETPLACE" 2>&1 | sed 's/^/    /' || true
+        claude_in_scope plugin update "$PLUGIN_ID" --scope "$SCOPE" 2>&1 | sed 's/^/    /' \
+          || warn "Claude Code: plugin update failed; see the output above."
+      else
+        ok "Claude Code: $PLUGIN_ID already installed (it reads this checkout, so edits apply on the next session)"
+      fi ;;
+    missing)
+      info "Claude Code: installing $PLUGIN_ID (scope $SCOPE)"
+      if claude_in_scope plugin install "$PLUGIN_ID" --scope "$SCOPE" 2>&1 | sed 's/^/    /'; then
+        ok "Claude Code: plugin installed; skills are named ai-skills:<name>"
+      else
+        warn "Claude Code: plugin install failed; see the output above."
+      fi ;;
+  esac
+  plugin_duplicates claude
+}
+
+install_plugin_openai() {
+  local status
+  status="$(plugin_status openai)"
+  if [ "$status" = "no-cli" ]; then
+    warn "Codex: the codex CLI is not on PATH, so the plugin was not installed. Run:"
+    warn "  codex plugin marketplace add \"$REPO_DIR\" && codex plugin add $PLUGIN_ID"
+    return 0
+  fi
+  [ "$SCOPE" = "project" ] && warn "Codex: plugins are user-level only; installing for the user, not for $PROJECT_DIR."
+  if [ -n "$(git -C "$REPO_DIR" status --porcelain -- openai .codex-plugin .agents 2>/dev/null)" ]; then
+    warn "Codex: openai/ or the Codex manifests have uncommitted changes. Codex installs the committed tree, so commit first to include them."
+  fi
+  if ! codex plugin marketplace list 2>/dev/null | grep -q "^$PLUGIN_MARKETPLACE "; then
+    info "Codex: adding this checkout as the '$PLUGIN_MARKETPLACE' marketplace"
+    codex plugin marketplace add "$REPO_DIR" 2>&1 | sed 's/^/    /' \
+      || { warn "Codex: 'codex plugin marketplace add' failed; see the output above."; return 0; }
+  fi
+  if [ "$status" = "installed" ] && [ "$MODE" != "update" ]; then
+    ok "Codex: $PLUGIN_ID already installed (run with --update to reinstall from the current commit)"
+  else
+    info "Codex: installing $PLUGIN_ID from the current commit"
+    if codex plugin add "$PLUGIN_ID" 2>&1 | sed 's/^/    /'; then
+      ok "Codex: plugin installed. Subagent skills need multi_agent = true under [features] in ~/.codex/config.toml."
+    else
+      warn "Codex: 'codex plugin add' failed; see the output above."
+    fi
+  fi
+  plugin_duplicates openai
+}
+
+# Plugin mode: the plugin replaces the per-skill copies, but third-party
+# runtimes (Cortex, graphify) and the agent templates still install here.
+install_plugin() {
+  local vendor="$1"
+  "install_plugin_$vendor"
+  if [ "$WITH_EXTERNAL" = "yes" ]; then
+    check_python310
+    cortex_memory_runtime "$vendor"
+    install_graphify "$vendor"
+  else
+    info "--no-external given, skipping the Cortex plugin/MCP server and graphify"
+  fi
+  [ "$COPY_AGENTS" = "yes" ] && install_agents "$vendor" agent-router
+  return 0
+}
+
 # read with a default; returns default when stdin is not a tty (non-interactive)
 ask() {
   local prompt="$1" default="$2" answer
@@ -539,6 +667,8 @@ while [ $# -gt 0 ]; do
     --no-agents) COPY_AGENTS="no" ;;
     --list) LIST_ONLY="yes" ;;
     --no-external) WITH_EXTERNAL="no" ;;
+    --plugin) METHOD="plugin" ;;
+    --skills) METHOD="skills" ;;
     *) die "Unknown option: $1 (try --help)" ;;
   esac
   shift
@@ -587,6 +717,42 @@ if [ "$NONINTERACTIVE" = "no" ] && [ -t 0 ] && [ "$SCOPE" = "user" ] && [ -z "$P
   fi
 fi
 
+# ---------------------------------------------------------- install method ---
+if [ "$METHOD" = "ask" ]; then
+  if [ "$NONINTERACTIVE" = "no" ] && [ -t 0 ] && [ "$LIST_ONLY" = "no" ]; then
+    say ""
+    say "How should they be installed?"
+    say "  1) As the ai-skills plugin: every skill, plus a session-start bootstrap on Claude Code  [default]"
+    say "  2) As individual skills copied into the skills folder (pick which ones)"
+    choice="$(ask "Choice [1]: " "1")"
+    [ "$choice" = "2" ] && METHOD="skills" || METHOD="plugin"
+  else
+    METHOD="skills"
+  fi
+fi
+
+if [ "$METHOD" = "plugin" ] && [ "$LIST_ONLY" = "no" ]; then
+  if [ "$NONINTERACTIVE" = "no" ] && [ -t 0 ]; then
+    say ""
+    say "Action:"
+    say "  1) Install (leave an installed plugin as it is)  [default]"
+    say "  2) Update (refresh the marketplace and reinstall the plugin)"
+    choice="$(ask "Choice [$([ "$MODE" = "update" ] && echo 2 || echo 1)]: " "$([ "$MODE" = "update" ] && echo 2 || echo 1)")"
+    [ "$choice" = "2" ] && MODE="update" || MODE="install"
+    if [ "$COPY_AGENTS" = "ask" ]; then
+      a="$(ask "Copy the agent-router agent templates too (existing agents are never overwritten)? [y/N]: " "n")"
+      case "$a" in y|Y|yes|YES) COPY_AGENTS="yes" ;; *) COPY_AGENTS="no" ;; esac
+    fi
+  fi
+  [ "$COPY_AGENTS" = "ask" ] && COPY_AGENTS="no"
+  say ""
+  say "Applying ($MODE, plugin):"
+  for v in $AVAILABLE; do install_plugin "$v"; done
+  say ""
+  say "Done. Restart Claude Code / Codex (or start a new session) so the plugin is loaded."
+  exit 0
+fi
+
 # ------------------------------------------------------------ list skills ---
 # Build a numbered catalogue: "vendor skill status"
 CATALOGUE=""
@@ -612,7 +778,19 @@ $n $v $s $st"
   done
 done
 [ "$n" -gt 0 ] || die "No skills found in the repo for: $AVAILABLE"
-[ "$LIST_ONLY" = "yes" ] && exit 0
+if [ "$LIST_ONLY" = "yes" ]; then
+  say ""
+  say "ai-skills plugin ($PLUGIN_ID):"
+  for v in $AVAILABLE; do
+    case "$(plugin_status "$v")" in
+      installed) tag="\033[32m[installed]\033[0m" ;;
+      missing)   tag="\033[90m[not installed]\033[0m" ;;
+      no-cli)    tag="\033[90m[CLI not on PATH]\033[0m" ;;
+    esac
+    printf '      %-13s %b\n' "$(vendor_label "$v")" "$tag"
+  done
+  exit 0
+fi
 
 # --------------------------------------------------------- mode + selection ---
 if [ "$NONINTERACTIVE" = "no" ] && [ -t 0 ]; then
