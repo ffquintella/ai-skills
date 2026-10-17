@@ -1,6 +1,6 @@
 name = "test-runner"
-description = "Runs the project build or a test filter and returns only failures with their messages, keeping verbose test output out of the main thread. Cheapest tier (gpt-5.6-luna, low effort). Use whenever a build or test run is needed as evidence."
-model = "gpt-5.6-luna"
+description = "Runs the project build or a test filter and returns only failures with their messages, keeping verbose test output out of the main thread. Cheapest tier (gpt-6-luna, low effort). Use whenever a build or test run is needed as evidence."
+model = "gpt-6-luna"
 model_reasoning_effort = "low"
 sandbox_mode = "workspace-write"
 

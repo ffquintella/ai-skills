@@ -12,6 +12,7 @@
 #   ./install.sh --list           show skills and their install status, then exit
 #   ./install.sh --no-external    skip third-party software: the graphify CLI
 #                                 and the Cortex plugin / MCP server
+#   ./install.sh --no-router      skip preparing the bundled agent-router runtime
 #   ./install.sh --plugin         install the ai-skills plugin (all skills plus the
 #                                 session-start bootstrap) instead of copying skills
 #   ./install.sh --skills         copy individual skills (default without a terminal)
@@ -63,6 +64,8 @@ SELECT_ALL="no"
 COPY_AGENTS="ask"       # ask | yes | no
 LIST_ONLY="no"
 WITH_EXTERNAL="yes"
+WITH_ROUTER="yes"
+ROUTER_PREPARED="no"
 NONINTERACTIVE="no"
 METHOD="ask"            # ask | plugin | skills
 
@@ -80,7 +83,7 @@ warn() { printf '  \033[33m%s\033[0m\n' "$*"; }
 err()  { printf '\033[31m%s\033[0m\n' "$*" >&2; }
 die()  { err "$*"; exit 1; }
 
-usage() { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
+usage() { sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
 
 vendor_label() {
   case "$1" in
@@ -126,6 +129,33 @@ agents_root() {
     claude) echo "$base/.claude/agents" ;;
     openai) echo "$base/.codex/agents" ;;
   esac
+}
+
+# Keep mutable runtime/policy outside copied skills and plugin caches. An explicit
+# override wins over both project and user defaults.
+router_runtime_dir() {
+  if [ -n "${AI_SKILLS_ROUTER_HOME:-}" ]; then
+    shell_path "$AI_SKILLS_ROUTER_HOME"
+  elif [ "$SCOPE" = "project" ]; then
+    printf '%s\n' "$PROJECT_DIR/.ai-skills/agent-router"
+  else
+    shell_path "${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router"
+  fi
+}
+
+ensure_agent_router() {
+  local dest binary
+  [ "$ROUTER_PREPARED" = "no" ] || return 0
+  ROUTER_PREPARED="yes"
+  if [ "$WITH_ROUTER" = "no" ]; then
+    info "--no-router given, skipping the agent-router runtime"
+    return 0
+  fi
+  dest="$(router_runtime_dir)"
+  info "Preparing agent-router runtime at $dest"
+  binary="$(bash "$REPO_DIR/scripts/router-runtime.sh" --root "$REPO_DIR" --runtime-dir "$dest" --ensure)" \
+    || die "agent-router runtime preparation failed; see the diagnostic above (or use --no-router to skip)."
+  ok "agent-router runtime: $binary"
 }
 
 # Skills available in the repo for a vendor (directory names), then the
@@ -637,8 +667,8 @@ install_plugin_openai() {
     return 0
   fi
   [ "$SCOPE" = "project" ] && warn "Codex: plugins are user-level only; installing for the user, not for $PROJECT_DIR."
-  if [ -n "$(git -C "$REPO_DIR" status --porcelain -- openai .codex-plugin .agents 2>/dev/null)" ]; then
-    warn "Codex: openai/ or the Codex manifests have uncommitted changes. Codex installs the committed tree, so commit first to include them."
+  if [ -n "$(git -C "$REPO_DIR" status --porcelain -- openai .codex-plugin .agents tools/agent-router scripts/router-runtime.sh scripts/agent-router 2>/dev/null)" ]; then
+    warn "Codex: skills, router source/launchers or the Codex manifests have uncommitted changes. Codex installs the committed tree, so commit first to include them."
   fi
   if ! codex plugin marketplace list 2>/dev/null | grep -q "^$PLUGIN_MARKETPLACE "; then
     info "Codex: adding this checkout as the '$PLUGIN_MARKETPLACE' marketplace"
@@ -696,6 +726,7 @@ while [ $# -gt 0 ]; do
     --no-agents) COPY_AGENTS="no" ;;
     --list) LIST_ONLY="yes" ;;
     --no-external) WITH_EXTERNAL="no" ;;
+    --no-router) WITH_ROUTER="no" ;;
     --plugin) METHOD="plugin" ;;
     --skills) METHOD="skills" ;;
     *) die "Unknown option: $1 (try --help)" ;;
@@ -778,6 +809,7 @@ if [ "$METHOD" = "plugin" ] && [ "$LIST_ONLY" = "no" ]; then
   [ "$COPY_AGENTS" = "ask" ] && COPY_AGENTS="no"
   say ""
   say "Applying ($MODE, plugin):"
+  ensure_agent_router
   for v in $AVAILABLE; do install_plugin "$v"; done
   say ""
   say "Done. Restart Claude Code / Codex (or start a new session) so the plugin is loaded."
@@ -810,6 +842,10 @@ $n $v $s $st"
 done
 [ "$n" -gt 0 ] || die "No skills found in the repo for: $AVAILABLE"
 if [ "$LIST_ONLY" = "yes" ]; then
+  router_dest="$(router_runtime_dir)"
+  router_status="$(bash "$REPO_DIR/scripts/router-runtime.sh" --root "$REPO_DIR" --runtime-dir "$router_dest" --status)"
+  say ""
+  say "agent-router runtime: $router_status ($router_dest)"
   say ""
   say "ai-skills plugin ($PLUGIN_ID):"
   for v in $AVAILABLE; do
@@ -869,6 +905,12 @@ if [ "$HAS_AGENTS" = "yes" ] && [ "$COPY_AGENTS" = "ask" ]; then
 fi
 
 # ------------------------------------------------------------------ apply ---
+# Fail before copying skills if a selected router cannot be prepared. Both
+# vendor copies share the same runtime, so prepare it at most once per run.
+for idx in $SELECTED; do
+  s="$(printf '%s' "$CATALOGUE" | awk -v i="$idx" '$1 == i {print $3}')"
+  [ "$s" = "agent-router" ] && ensure_agent_router
+done
 say ""
 say "Applying ($MODE):"
 for idx in $SELECTED; do

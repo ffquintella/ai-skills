@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Works in a complete plugin or as an individually copied skill.
+set -euo pipefail
+here="$(cd "$(dirname "$0")" && pwd)"
+plugin_root="$(cd "$here/../../.." && pwd)"
+if [ -f "$plugin_root/scripts/router-runtime.sh" ] && [ -f "$plugin_root/tools/agent-router/Cargo.toml" ]; then
+  exec bash "$plugin_root/scripts/agent-router" "$@"
+fi
+runtime="${AI_SKILLS_ROUTER_HOME:-}"
+if [ -z "$runtime" ]; then
+  probe="$PWD"
+  while :; do
+    if [ -d "$probe/.ai-skills/agent-router" ]; then
+      runtime="$probe/.ai-skills/agent-router"
+      break
+    fi
+    parent="$(dirname "$probe")"
+    [ "$parent" != "$probe" ] || break
+    probe="$parent"
+  done
+fi
+if [ -z "$runtime" ]; then
+  project_root="$(cd "$here/../../../.." && pwd)"
+  if [ -d "$project_root/.ai-skills/agent-router" ]; then
+    runtime="$project_root/.ai-skills/agent-router"
+  else runtime="${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router"; fi
+fi
+suffix=''
+case "$(uname -s)" in MINGW*|MSYS*) suffix=.exe; runtime="$(cygpath -u "$runtime")" ;; esac
+binary="$runtime/agent-router$suffix"
+[ -f "$binary" ] && [ -f "$runtime/models.yaml" ] || {
+  printf 'agent-router: runtime missing; rerun the ai-skills installer without --no-router\n' >&2
+  exit 1
+}
+exec "$binary" "$@"

@@ -1,8 +1,8 @@
 ---
 name: reviewer
-description: Reviews a diff or design against the project rules in AGENTS.md / CLAUDE.md (auth contract, routing, secrets, test discipline) and reports gaps that affect correctness or the rules. Read-only, Sonnet at high effort; the router overrides to opus for security-sensitive code.
+description: Reviews a diff or design against the project rules in AGENTS.md / CLAUDE.md (auth contract, routing, secrets, test discipline) and reports gaps that affect correctness or the rules. Read-only, Sonnet at high effort; the router overrides to claude-opus-5-5 for security-sensitive code.
 tools: Read, Grep, Glob, Bash
-model: sonnet
+model: claude-sonnet-5-5
 effort: high
 ---
 

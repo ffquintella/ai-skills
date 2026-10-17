@@ -1,7 +1,7 @@
 ---
 name: architect
 description: Handles complex changes: multi-file features, new abstractions, unclear approaches, unlocalised bugs, and anything touching authentication, secrets, configuration schema, connection pooling or the application composition root. Opus at xhigh effort. Also the escalation target when builder fails.
-model: opus
+model: claude-opus-5-5
 effort: xhigh
 ---
 

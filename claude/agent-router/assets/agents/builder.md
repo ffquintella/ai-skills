@@ -1,7 +1,7 @@
 ---
 name: builder
 description: Implements a clearly scoped change (1 to 3 files, an existing pattern to follow): a new endpoint like an existing one, a test for a known case, a config field, a small refactor. Sonnet at high effort. Runs the build and the relevant test filter before reporting.
-model: sonnet
+model: claude-sonnet-5-5
 effort: high
 ---
 

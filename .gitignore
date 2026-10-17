@@ -8,3 +8,8 @@ graphify-out/cost.json
 
 # subagent-driven-development workspace (scripts/sdd-workspace)
 .ai-skills/
+
+# Local Rust builds and distribution artifacts
+tools/agent-router/target/
+dist/
+__pycache__/

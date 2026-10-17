@@ -2,7 +2,8 @@
 name: test-runner
 description: Runs the project build or a test filter and returns only failures with their messages, keeping verbose test output out of the main context. Cheapest tier (Haiku). Use whenever a build or test run is needed as evidence.
 tools: Bash, Read, Grep
-model: haiku
+model: claude-haiku-5-5
+effort: low
 ---
 
 You run exactly the command(s) named in the brief from the repository root and report

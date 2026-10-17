@@ -1,6 +1,6 @@
 name = "reviewer"
-description = "Reviews a diff or design against the project rules in AGENTS.md (auth contract, routing, secrets, test discipline) and reports gaps that affect correctness or the rules. Read-only, gpt-5.6-terra at high effort; the router overrides to gpt-5.6-sol for security-sensitive code."
-model = "gpt-5.6-terra"
+description = "Reviews a diff or design against the project rules in AGENTS.md (auth contract, routing, secrets, test discipline) and reports gaps that affect correctness or the rules. Read-only, gpt-6.1-sol at high effort; use xhigh effort for security-sensitive code."
+model = "gpt-6.1-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 

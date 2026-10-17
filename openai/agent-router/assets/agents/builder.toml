@@ -1,6 +1,6 @@
 name = "builder"
-description = "Implements a clearly scoped change (1 to 3 files, an existing pattern to follow): a new endpoint like an existing one, a test for a known case, a config field, a small refactor. gpt-5.6-terra at high effort. Runs the build and the relevant test filter before reporting."
-model = "gpt-5.6-terra"
+description = "Implements a clearly scoped change (1 to 3 files, an existing pattern to follow): a new endpoint like an existing one, a test for a known case, a config field, a small refactor. gpt-6.1-sol at high effort. Runs the build and the relevant test filter before reporting."
+model = "gpt-6.1-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 

@@ -12,22 +12,71 @@ part (file reads, test output, exploration) into a disposable context and return
 summary. The two cost levers are the **model tier** and the **effort level**
 (`low` < `medium` < `high` < `xhigh` < `max`).
 
+Verified 2026-10-17. Standard Claude API text prices in USD per 1M tokens;
+subscription usage and partner pricing can differ.
+
 | Tier | Model id | Input $/1M | Output $/1M | Relative input cost |
 | --- | --- | --- | --- | --- |
-| Haiku 4.5 | `claude-haiku-4-5` | 1.00 | 5.00 | 1x |
-| Sonnet 5 | `claude-sonnet-5` | 2.00 | 10.00 | 2x |
-| Opus 5 | `claude-opus-5` | 5.00 | 25.00 | 5x |
-| Fable 5.1 | `claude-fable-5-1` | 10.00 | 50.00 | 10x |
+| Haiku 5.5 | `claude-haiku-5-5` | 0.10 / 0.50 | 0.50 / 2.50 | 1x / 5x |
+| Sonnet 5.5 | `claude-sonnet-5-5` | 2.00 | 10.00 | 20x |
+| Opus 5.5 | `claude-opus-5-5` | 4.00 | 20.00 | 40x |
+| Fable 5.1 | `claude-fable-5-1` | 10.00 | 50.00 | 100x |
 
-Anthropic's measurements say: sweep effort before changing model, lower effort on a
-newer model often beats higher effort on an older one, and "run cheap, re-run failures
-higher" gives the same pass rate at about half the cost. Details and URLs in
-[references/sources.md](references/sources.md).
+Haiku's first price applies to prompts up to 100,000 tokens; the second applies
+over that threshold. Relative costs use short-prompt Haiku as the baseline.
+Haiku 5.5 now supports all five effort levels and defaults to `medium`, as does
+Opus 5.5. Sonnet 5.5 and Fable 5.1 default to `high`. Use `low` for short Haiku
+lookups and command execution, and raise it for longer instruction-heavy work.
+Details and URLs in [references/sources.md](references/sources.md).
 
-Effort can only be pinned in an agent definition, never per call, so the project ships
+Check host access before dispatching. These are general-purpose routing models;
+specialized or restricted models are not automatic escalation targets. Preserve an
+explicit user model choice. Templates pin full IDs so aliases cannot move the
+routing matrix to a different version without review.
+
+For Claude Code routing, pin effort in the agent definition so the project ships
 one agent per tier in `.claude/agents/`. Pick from those. If the project does not have
 them yet, copy the templates in [assets/agents/](assets/agents/) and fill in the
 project-specific placeholders (`<...>`).
+
+## Bundled executable: apply YAML policy and quota budgets
+
+Use the [bundled launcher](scripts/agent-router) before dispatching a nontrivial
+task. Resolve it relative to this skill's actual directory, then run it with Bash
+(Git Bash on Windows, not the WindowsApps/WSL bash shim):
+
+```sh
+bash "<absolute-skill-directory>/scripts/agent-router" --provider anthropic --task routine --daily-remaining 70 --weekly-remaining 8
+```
+
+In a full plugin, the launcher locates its bundled Rust sources and prepares a
+compatible native runtime outside the plugin cache, compiling with Cargo only if
+needed. The installer prepares it upfront for plugins and copied skills. A copied
+skill uses its project runtime or the shared user runtime without needing the
+original checkout. No PATH or shell-profile edits are required.
+
+Default user path: `${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router`;
+project install: `<project>/.ai-skills/agent-router`; `AI_SKILLS_ROUTER_HOME`
+overrides either. The full plugin also discovers a nearby project runtime from
+the current working directory. Existing custom `models.yaml` is preserved on
+update; new defaults are offered as `models.yaml.dist`. Model edits need no rebuild.
+[Build/install details](https://github.com/ffquintella/ai-skills/tree/main/tools/agent-router).
+
+Percentages are **remaining**, not used. Supply only known values and restrict
+`--available-models` to host-supported IDs. Apply returned model, effort, token and
+context budgets, concurrency and optional delegation to the actual host; a
+recommendation alone enforces nothing. At <=25% remaining use economy, at <=10%
+extreme (YAML-configurable); exhausted applicable quota blocks routing. Unknown
+or stale quota uses conservative economy. Security/capability floors remain
+mandatory. Keep real window durations: 5h is not a daily limit. Use
+`--quota-file` or `--quota-stdin` with a freshly timestamped Claude Code statusline
+snapshot.
+
+Exit 3 means quota blocked; exit 4 means no eligible model. Report either instead
+of dispatching anyway. If preparing the runtime fails (for example Cargo/build
+tools are missing), report the prerequisite and use the manual matrix below,
+stating that quota-aware selection could not be applied. `--no-router` skips
+installer preparation; it does not disable a later explicit launcher invocation.
 
 ## Step 1: classify the task
 
@@ -48,22 +97,21 @@ When two tiers fit, take the cheaper one and rely on the escalation ladder below
 | Tier | Agent | Model | Effort | Parallelism |
 | --- | --- | --- | --- | --- |
 | inline | none (coordinator does it) | current | current | 1 |
-| lookup | `scout` | haiku | n/a (Haiku 4.5 has no effort control) | 1, or 2 to 3 only for independent questions |
-| routine change | `builder` | sonnet | high | 1 |
-| complex change | `architect` | opus | xhigh | 1 (split into independent `builder` sub-tasks only if the architect's plan says so) |
-| review / security | `reviewer` | sonnet (override `model: opus` for security-sensitive paths: auth, secrets, rate limiting) | high | 1 |
-| verify | `test-runner` | haiku | n/a | 1 |
+| lookup | `scout` | `claude-haiku-5-5` | low | 1, or 2 to 3 only for independent questions |
+| routine change | `builder` | `claude-sonnet-5-5` | high | 1 |
+| complex change | `architect` | `claude-opus-5-5` | xhigh | 1 (split into independent `builder` sub-tasks only if the architect's plan says so) |
+| review / security | `reviewer` | `claude-sonnet-5-5` (override `model: claude-opus-5-5` for security-sensitive paths: auth, secrets, rate limiting) | high | 1 |
+| verify | `test-runner` | `claude-haiku-5-5` | low | 1 |
 | plan | built-in `Plan` | inherits | inherits | 1 |
 
-Why these defaults: independent benchmarks found single-shot code quality plateaus
-at `high`, while long agentic loops at `xhigh` often use *fewer* total tokens because
-better planning means fewer turns; and Sonnet 5 at `medium` matches Sonnet 4.6 at
-`high`. So if `builder` bills look high on mechanical work, `medium` is the first
-step-down to try (edit `.claude/agents/builder.md`), not a cheaper model.
+Why these defaults: keep focused lookups and verification on Haiku at `low`,
+routine implementation and review on Sonnet at `high`, and complex work on Opus at
+`xhigh`. These are project routing defaults, not measured quality claims for the
+new releases. Try `medium` on mechanical builder work after measuring quality.
 
-Use `fable` only when the user asks for it by name or an `architect` run at `xhigh`
-failed on a problem that is genuinely frontier (novel algorithm, deep concurrency bug),
-not just large. It costs twice Opus.
+Use `claude-fable-5-1` only when the user asks for it by name or an `architect` run
+at `xhigh` failed on a frontier problem (novel algorithm, deep concurrency bug).
+It costs 2.5x Opus 5.5 at base input and output rates.
 
 ### Lookups: query the code graph first when one exists
 
@@ -148,7 +196,7 @@ Read the agent's evidence (test output, build exit code). If it fails or the ans
 shallow, do not retry at the same level: climb one rung.
 
 ```
-scout (haiku) -> builder (sonnet high) -> architect (opus xhigh) -> architect with model: fable
+scout (haiku 5.5 low) -> builder (sonnet 5.5 high) -> architect (opus 5.5 xhigh) -> architect with model: claude-fable-5-1
 ```
 
 Escalate with the failure attached to the brief, so the next agent does not rediscover

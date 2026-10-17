@@ -1,6 +1,6 @@
 name = "architect"
-description = "Handles complex changes: multi-file features, new abstractions, unclear approaches, unlocalised bugs, and anything touching authentication, secrets, configuration schema, connection pooling or the application composition root. gpt-5.6-sol at xhigh effort. Also the escalation target when builder fails."
-model = "gpt-5.6-sol"
+description = "Handles complex changes: multi-file features, new abstractions, unclear approaches, unlocalised bugs, and anything touching authentication, secrets, configuration schema, connection pooling or the application composition root. gpt-6.1-sol at xhigh effort. Also the escalation target when builder fails."
+model = "gpt-6.1-sol"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 

@@ -9,27 +9,74 @@ The main thread is the scarce resource: everything it reads is re-billed on ever
 turn, and quality drops as it fills. Delegating to a subagent moves the verbose part
 (file reads, test output, exploration) into a disposable context and returns a
 summary. The two cost levers are the **model tier** and the **reasoning effort**
-(`none` < `low` < `medium` < `high` < `xhigh` < `max`; Codex exposes
-`minimal`..`xhigh` in config).
+(`low` < `medium` < `high` < `xhigh` < `max` for the recommended defaults).
+
+Verified 2026-10-17. Standard API text prices in USD per 1M tokens; subscription
+usage, long prompts and service tiers can differ.
 
 | Tier | Model id | Input $/1M | Output $/1M | Relative input cost |
 | --- | --- | --- | --- | --- |
-| GPT-5.6 Luna | `gpt-5.6-luna` | 0.20 | 1.20 | 1x |
-| GPT-5.6 Terra | `gpt-5.6-terra` | 2.00 | 12.00 | 10x |
-| GPT-5.6 Sol | `gpt-5.6-sol` | 4.00 (promo until at least 2026-11-21; list 5.00) | 20.00 (list 30.00) | 20x |
-| GPT-6 Astra | `gpt-6-astra` | 10.00 | 50.00 | 50x |
+| GPT-6 Luna | `gpt-6-luna` | 0.10 | 0.50 | 1x |
+| GPT-6.1 Sol | `gpt-6.1-sol` | 2.00 | 10.00 | 20x |
+| GPT-6 Astra | `gpt-6-astra` | 10.00 | 50.00 | 100x |
 
-Cached input is 10% of the input price on every tier, and all GPT-5.6 tiers default to
-`medium` effort. OpenAI's guidance: `low` for tool use, planning and search; `high`
-for hard debugging and deep planning in agentic loops; `xhigh` for long asynchronous
-runs; `max` only when correctness beats cost. Details and URLs in
+GPT-6.1 Sol replaces the older Terra/Sol routing defaults: use `high` for routine
+changes and `xhigh` for complex changes. GPT-6 Sol remains available at $2/$10,
+but GPT-6.1 Sol is the newer choice at the same base price. Cached input is 5% for
+GPT-6.1 Sol and 10% for Luna/Astra. All three recommended models support `low`
+through `max`; only Luna also supports `none`. Sol 6.1 rejects `none` and `minimal`.
+Use the Responses API for tools. Details and URLs in
 [references/sources.md](references/sources.md).
+
+Check the host's available models and effort values before dispatching. A model in
+the API catalog is not proof that the current Codex host or a pinned agent exposes
+it. Keep an explicit user model choice; report unavailable choices instead of
+inventing a model ID or silently substituting one.
 
 Effort and model are pinned per agent in `.codex/agents/<name>.toml`
 (`model`, `model_reasoning_effort`), with fallbacks in the `[agents]` table of
 `config.toml`. Pick from the project's agents. If the project does not have them yet,
 copy the templates in [assets/agents/](assets/agents/) into `.codex/agents/` and fill
 in the project-specific placeholders (`<...>`).
+
+## Bundled executable: apply YAML policy and quota budgets
+
+Use the [bundled launcher](scripts/agent-router) before dispatching a nontrivial
+task. Resolve it relative to this skill's actual directory, then run it with Bash
+(Git Bash on Windows, not the WindowsApps/WSL bash shim):
+
+```sh
+bash "<absolute-skill-directory>/scripts/agent-router" --provider openai --task routine --daily-remaining 70 --weekly-remaining 8
+```
+
+In a full plugin, the launcher locates its bundled Rust sources and prepares a
+compatible native runtime outside the plugin cache, compiling with Cargo only if
+needed. The installer prepares it upfront for plugins and copied skills. A copied
+skill uses its project runtime or the shared user runtime without needing the
+original checkout. No PATH or shell-profile edits are required.
+
+Default user path: `${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router`;
+project install: `<project>/.ai-skills/agent-router`; `AI_SKILLS_ROUTER_HOME`
+overrides either. The full plugin also discovers a nearby project runtime from
+the current working directory. Existing custom `models.yaml` is preserved on
+update; new defaults are offered as `models.yaml.dist`. Model edits need no rebuild.
+[Build/install details](https://github.com/ffquintella/ai-skills/tree/main/tools/agent-router).
+
+Percentages are **remaining**, not used. Supply only known values and restrict
+`--available-models` to host-supported IDs. Apply returned model, effort, token and
+context budgets, concurrency and optional delegation to the actual host; a
+recommendation alone enforces nothing. At <=25% remaining use economy, at <=10%
+extreme (YAML-configurable); exhausted applicable quota blocks routing. Unknown
+or stale quota uses conservative economy. Security/capability floors remain
+mandatory. Keep real window durations: 5h is not a daily limit. Use
+`--quota-source codex` for a live read-only App Server query, or timestamped
+`--quota-file`/`--quota-stdin` snapshots.
+
+Exit 3 means quota blocked; exit 4 means no eligible model. Report either instead
+of dispatching anyway. If preparing the runtime fails (for example Cargo/build
+tools are missing), report the prerequisite and use the manual matrix below,
+stating that quota-aware selection could not be applied. `--no-router` skips
+installer preparation; it does not disable a later explicit launcher invocation.
 
 ## Step 1: classify the task
 
@@ -50,23 +97,26 @@ When two tiers fit, take the cheaper one and rely on the escalation ladder below
 | Tier | Agent | Model | Effort | Sandbox | Parallelism |
 | --- | --- | --- | --- | --- | --- |
 | inline | none (coordinator does it) | current | current | current | 1 |
-| lookup | `scout` | `gpt-5.6-luna` | low | read-only | 1, or 2 to 3 only for independent questions |
-| routine change | `builder` | `gpt-5.6-terra` | high | workspace-write | 1 |
-| complex change | `architect` | `gpt-5.6-sol` | xhigh | workspace-write | 1 (split into independent `builder` sub-tasks only if the architect's plan says so) |
-| review / security | `reviewer` | `gpt-5.6-terra` (override `model = "gpt-5.6-sol"` for security-sensitive paths: auth, secrets, rate limiting) | high | read-only | 1 |
-| verify | `test-runner` | `gpt-5.6-luna` | low | workspace-write (needs to run the build) | 1 |
+| lookup | `scout` | `gpt-6-luna` | low | read-only | 1, or 2 to 3 only for independent questions |
+| routine change | `builder` | `gpt-6.1-sol` | high | workspace-write | 1 |
+| complex change | `architect` | `gpt-6.1-sol` | xhigh | workspace-write | 1 (split into independent `builder` sub-tasks only if the architect's plan says so) |
+| review / security | `reviewer` | `gpt-6.1-sol` | high (xhigh for security-sensitive paths: auth, secrets, rate limiting) | read-only | 1 |
+| verify | `test-runner` | `gpt-6-luna` | low | workspace-write (needs to run the build) | 1 |
 | plan | coordinator in plan mode, or `architect` with the instruction "plan only, no edits" | inherits | inherits | read-only | 1 |
 
-Why these defaults: OpenAI documents `low` as the right level for tool-driven search
-and lookups, `high` for complex debugging and deep planning, and `xhigh` for long
-agentic runs; independent benchmarks on the GPT-5 line show up to 23x token spread
-between the lowest and highest effort with flat quality on classification-style work.
-So if `builder` bills look high on mechanical work, `medium` (the tier default) is the
-first step-down to try (edit `.codex/agents/builder.toml`), not a cheaper model.
+Why these defaults: keep focused lookups and verification on Luna at `low`, and
+use Sol 6.1 for implementation and review. Routine and complex work now share a
+model but differ in effort. Try `medium` on mechanical builder work only after
+measuring that it preserves quality; these routing defaults are project policy,
+not a benchmark result for the new models.
 
 Use `gpt-6-astra` only when the user asks for it by name or an `architect` run at
-`xhigh` failed on a problem that is genuinely frontier (novel algorithm, deep
-concurrency bug), not just large. It costs 2.5x Sol and does not accept `none`.
+`xhigh` failed on a frontier problem (novel algorithm, deep concurrency bug).
+It costs 5x Sol 6.1 at base input and output rates and does not accept `none`.
+
+For security review, set `model_reasoning_effort = "xhigh"` in the reviewer
+agent definition before dispatch when the host gives pinned values precedence.
+A spawn-time request alone does not override a pinned agent setting.
 
 ### Lookups: query the code graph first when one exists
 
@@ -154,7 +204,7 @@ Read the agent's evidence (test output, build exit code). If it fails or the ans
 shallow, do not retry at the same level: climb one rung.
 
 ```
-scout (luna low) -> builder (terra high) -> architect (sol xhigh) -> architect with model = "gpt-6-astra"
+scout (luna low) -> builder (sol 6.1 high) -> architect (sol 6.1 xhigh) -> architect with model = "gpt-6-astra"
 ```
 
 Escalate with the failure attached to the brief, so the next agent does not rediscover

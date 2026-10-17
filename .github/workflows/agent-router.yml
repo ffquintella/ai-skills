@@ -1,0 +1,115 @@
+name: Agent router CLI
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/agent-router/**'
+      - 'scripts/package-router.py'
+      - 'scripts/tests/test_package_router.py'
+      - 'scripts/tests/smoke_package_router.py'
+      - '.github/workflows/agent-router.yml'
+      - 'VERSION'
+      - 'install.sh'
+      - 'install.ps1'
+      - '.gitattributes'
+      - 'scripts/agent-router'
+      - 'scripts/router-runtime.sh'
+      - 'scripts/tests/test-router-*.sh'
+      - 'scripts/test-install-windows.ps1'
+      - 'openai/agent-router/**'
+      - 'claude/agent-router/**'
+  pull_request:
+    paths:
+      - 'tools/agent-router/**'
+      - 'scripts/package-router.py'
+      - 'scripts/tests/test_package_router.py'
+      - 'scripts/tests/smoke_package_router.py'
+      - '.github/workflows/agent-router.yml'
+      - 'VERSION'
+      - 'install.sh'
+      - 'install.ps1'
+      - '.gitattributes'
+      - 'scripts/agent-router'
+      - 'scripts/router-runtime.sh'
+      - 'scripts/tests/test-router-*.sh'
+      - 'scripts/test-install-windows.ps1'
+      - 'openai/agent-router/**'
+      - 'claude/agent-router/**'
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2025
+            target: x86_64-pc-windows-msvc
+            executable: agent-router.exe
+          - os: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            executable: agent-router.exe
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+            executable: agent-router
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            executable: agent-router
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+            executable: agent-router
+          - os: macos-15
+            target: aarch64-apple-darwin
+            executable: agent-router
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install native stable Rust
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+          rustup default stable
+          rustup target add '${{ matrix.target }}'
+      - name: Test and lint
+        working-directory: tools/agent-router
+        run: |
+          cargo fmt --check
+          cargo test --locked --target '${{ matrix.target }}'
+          cargo clippy --locked --all-targets --target '${{ matrix.target }}' -- -D warnings
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Verify packager
+        run: python -m unittest discover -s scripts/tests -p test_package_router.py
+      - name: Build and package
+        run: |
+          cargo build --locked --release --manifest-path tools/agent-router/Cargo.toml --target '${{ matrix.target }}'
+          python scripts/package-router.py --target '${{ matrix.target }}' --binary 'tools/agent-router/target/${{ matrix.target }}/release/${{ matrix.executable }}'
+      - name: Exercise packaged binary with adjacent YAML
+        run: |
+          python scripts/tests/smoke_package_router.py --target '${{ matrix.target }}'
+      - name: Verify runtime bootstrap and installer integration
+        run: |
+          bash scripts/tests/test-router-runtime.sh 'tools/agent-router/target/${{ matrix.target }}/release/${{ matrix.executable }}'
+          bash scripts/tests/test-router-install.sh 'tools/agent-router/target/${{ matrix.target }}/release/${{ matrix.executable }}'
+          bash scripts/tests/test-router-launchers.sh 'tools/agent-router/target/${{ matrix.target }}/release/${{ matrix.executable }}'
+      - name: Verify PowerShell installer entry point
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          AI_SKILLS_ROUTER_BINARY: ${{ github.workspace }}/tools/agent-router/target/${{ matrix.target }}/release/${{ matrix.executable }}
+        run: ./scripts/test-install-windows.ps1
+      - uses: actions/upload-artifact@v7
+        with:
+          name: agent-router-${{ matrix.target }}
+          path: |
+            dist/agent-router-*.zip
+            dist/agent-router-*.zip.sha256
+          if-no-files-found: error

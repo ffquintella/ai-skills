@@ -1,0 +1,129 @@
+# Verified catalog: 2026-10-17. API USD / 1M text tokens, not subscription credits.
+# IDs, costs, task requirements and budgets can change without recompilation.
+schema_version: 1
+effort_order: [none, low, medium, high, xhigh, max]
+reference_workload:
+  input_tokens: 4000
+  output_tokens: 1000
+quota_policy:
+  snapshot_ttl_seconds: 300
+  economy_remaining_percent: 25
+  extreme_remaining_percent: 10
+modes:
+  normal: {max_output_tokens: 8192, context_budget_tokens: 128000, concurrency: 2, optional_delegation: true}
+  economy: {max_output_tokens: 2048, context_budget_tokens: 32768, concurrency: 1, optional_delegation: false}
+  extreme: {max_output_tokens: 768, context_budget_tokens: 8192, concurrency: 1, optional_delegation: false}
+tasks:
+  lookup:
+    min_tier: 1
+    required_capabilities: [tools]
+    min_effort: low
+    preferred_effort: {normal: low, economy: low, extreme: low}
+    security: {min_tier: 3, min_effort: xhigh, required_capabilities: [code]}
+  verify:
+    min_tier: 1
+    required_capabilities: [tools]
+    min_effort: low
+    preferred_effort: {normal: low, economy: low, extreme: low}
+    security: {min_tier: 3, min_effort: xhigh, required_capabilities: [code]}
+  routine:
+    min_tier: 2
+    required_capabilities: [tools, code]
+    min_effort: medium
+    preferred_effort: {normal: high, economy: medium, extreme: medium}
+    security: {min_tier: 3, min_effort: xhigh, required_capabilities: [code]}
+  complex:
+    min_tier: 3
+    required_capabilities: [tools, code]
+    min_effort: high
+    preferred_effort: {normal: xhigh, economy: high, extreme: high}
+    security: {min_tier: 3, min_effort: xhigh, required_capabilities: [code]}
+  review:
+    min_tier: 2
+    required_capabilities: [tools, code]
+    min_effort: high
+    preferred_effort: {normal: high, economy: high, extreme: high}
+    security: {min_tier: 3, min_effort: xhigh, required_capabilities: [code]}
+providers:
+  openai:
+    models:
+      - id: gpt-6-luna
+        enabled: true
+        tier: 1
+        capabilities: [tools, code]
+        supported_efforts: [none, low, medium, high, xhigh, max]
+        quota_buckets: [codex]
+        context_tokens: 1050000
+        max_output_tokens: 128000
+        prices: {input: 0.10, cached_input: 0.01, output: 0.50}
+        price_bands:
+          - above_input_tokens: 272000
+            prices: {input: 0.20, cached_input: 0.02, output: 0.75}
+      - id: gpt-6.1-sol
+        enabled: true
+        tier: 3
+        capabilities: [tools, code]
+        supported_efforts: [low, medium, high, xhigh, max]
+        quota_buckets: [codex]
+        context_tokens: 1050000
+        max_output_tokens: 128000
+        prices: {input: 2.0, cached_input: 0.10, output: 10.0}
+        price_bands:
+          - above_input_tokens: 272000
+            prices: {input: 4.0, cached_input: 0.20, output: 15.0}
+      - id: gpt-6-astra
+        enabled: true
+        tier: 4
+        capabilities: [tools, code]
+        supported_efforts: [low, medium, high, xhigh, max]
+        quota_buckets: [codex]
+        context_tokens: 1050000
+        max_output_tokens: 128000
+        prices: {input: 10.0, cached_input: 1.0, output: 50.0}
+        price_bands:
+          - above_input_tokens: 272000
+            prices: {input: 20.0, cached_input: 2.0, output: 75.0}
+  anthropic:
+    models:
+      - id: claude-haiku-5-5
+        enabled: true
+        tier: 1
+        capabilities: [tools, code]
+        supported_efforts: [low, medium, high, xhigh, max]
+        quota_buckets: []
+        context_tokens: 1000000
+        max_output_tokens: 128000
+        prices: {input: 0.10, cached_input: 0.01, output: 0.50}
+        price_bands:
+          - above_input_tokens: 100000
+            prices: {input: 0.50, cached_input: 0.05, output: 2.50}
+      - id: claude-sonnet-5-5
+        enabled: true
+        tier: 2
+        capabilities: [tools, code]
+        supported_efforts: [low, medium, high, xhigh, max]
+        quota_buckets: []
+        context_tokens: 1000000
+        max_output_tokens: 128000
+        prices: {input: 2.0, cached_input: 0.10, output: 10.0}
+        price_bands: []
+      - id: claude-opus-5-5
+        enabled: true
+        tier: 3
+        capabilities: [tools, code]
+        supported_efforts: [low, medium, high, xhigh, max]
+        quota_buckets: []
+        context_tokens: 1000000
+        max_output_tokens: 128000
+        prices: {input: 4.0, cached_input: 0.20, output: 20.0}
+        price_bands: []
+      - id: claude-fable-5-1
+        enabled: true
+        tier: 4
+        capabilities: [tools, code]
+        supported_efforts: [low, medium, high, xhigh, max]
+        quota_buckets: []
+        context_tokens: 1000000
+        max_output_tokens: 128000
+        prices: {input: 10.0, cached_input: 0.25, output: 50.0}
+        price_bands: []

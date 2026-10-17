@@ -2,6 +2,17 @@
 
 A collection of agent skills useful for code development.
 
+The [agent-router CLI](tools/agent-router/README.md) is a standalone Rust executable
+for Windows, Linux and macOS. It reads an editable YAML model matrix, selects the
+cheapest capable model, and reduces token budgets as usage quotas approach their
+limits. Build/package instructions and quota-source examples are in its README;
+native CI artifacts include the executable, YAML and documentation.
+The plugin includes its launchers and Rust source. `install.sh`/`install.ps1`
+prepare the runtime automatically when installing `agent-router` or the plugin,
+reusing a compatible build or compiling with Cargo. Direct plugin installations
+prepare it lazily when the bundled launcher is first used. Custom YAML survives
+updates; no PATH changes are required.
+
 Skills are grouped by the vendor whose tooling and model lineup they target. Each
 skill is a folder with a `SKILL.md` (frontmatter `name` + `description`, then the
 instructions) and optional `references/` and `assets/`.
@@ -57,9 +68,12 @@ claude plugin marketplace add ffquintella/ai-skills && claude plugin install ai-
 codex plugin marketplace add ffquintella/ai-skills && codex plugin add ai-skills@ai-skills
 ```
 
-The plugin does not ship the `agent-router` agent templates (they need project-specific
-placeholders) or the external pieces (graphify, the Cortex server): `./install.sh --plugin`
-still installs those. Install either the plugin or the copied skills, not both, or every
+The plugin includes the `agent-router` launchers, Rust source and default YAML.
+Its native runtime is installed outside the plugin cache. It does not automatically
+install project agent templates (they need project-specific placeholders) or the
+external pieces (graphify, the Cortex server): `./install.sh --plugin` prepares the
+router and still installs those pieces as requested. Install either the plugin or
+the copied skills, not both, or every
 skill is listed twice; the installer warns when it finds copies. After changing a manifest
 or a skill that Codex users get, bump the version with `scripts/bump-version.sh <x.y.z>`
 (Codex keys its cache by version).

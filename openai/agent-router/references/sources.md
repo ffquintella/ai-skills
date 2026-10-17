@@ -1,29 +1,31 @@
 # Sources behind the routing matrix (OpenAI / Codex)
 
-Collected 2026-09-14. Numbers are quoted as reported by each source; re-check them
-when models change. Official OpenAI material first, independent articles after.
+Model catalog, prices and effort verified 2026-10-17. Other background collected
+2026-09-14; historical benchmarks below are not evaluations of the new defaults. Official OpenAI material first, independent articles after.
 
 ## Official OpenAI documentation
 
+- **Current model pages** (standard API text rates, USD per 1M tokens):
+  https://developers.openai.com/api/docs/models/gpt-6-luna ($0.10 input,
+  $0.01 cached input, $0.50 output),
+  https://developers.openai.com/api/docs/models/gpt-6.1-sol ($2 input,
+  $0.10 cached input, $10 output), and
+  https://developers.openai.com/api/docs/models/gpt-6-astra ($10 input,
+  $1 cached input, $50 output).
+  All three list 1,050,000 context and 128,000 maximum output tokens. Sol 6.1 and
+  Astra support low/medium/high/xhigh/max; Sol 6.1 explicitly rejects none/minimal.
+  Luna also supports none. Use Responses for tools; Sol 6.1 Chat Completions has
+  no tool calling, and Luna Chat Completions function calling requires none.
+- **Previous Sol** - https://developers.openai.com/api/docs/models/gpt-6-sol
+  Still available at $2 input/$0.20 cached/$10 output, but its model page points
+  to GPT-6.1 Sol as the newer choice. Replaced Terra and Sol 5.6 in our defaults
+  with Sol 6.1 at different effort levels; this is routing policy, not a measured
+  claim that one model wins every workload.
 - **API pricing** - https://developers.openai.com/api/docs/pricing
-  Per 1M tokens (input / cached input / output): `gpt-6-astra` $10 / $1 / $50;
-  `gpt-5.6-sol` $4 / $0.40 / $20 (promotional, "available at least through
-  November 21, 2026"; list $5 / $30); `gpt-5.6-terra` $2 / $0.20 / $12;
-  `gpt-5.6-luna` $0.20 / $0.02 / $1.20. Older line still served: `gpt-5.5` $5 / $30,
-  `gpt-5.4` $2.50 / $15, `gpt-5.4-mini` $0.75 / $4.50, `gpt-5.4-nano` $0.20 / $1.25,
-  `gpt-5.3-codex` $1.75 / $14. Cached input is 10% of input. Batch API is 50% off;
-  Flex matches batch rates; fast mode is 2x.
-- **Models overview** - https://developers.openai.com/api/docs/models
-  All four flagship tiers have a 1,050,000-token context window and 128K max output.
-  Astra: "our most capable model, built for the hardest end-to-end work"; Sol:
-  "flagship model for complex professional work"; Terra: "workloads that balance
-  intelligence and cost" (mini-tier successor); Luna: "cost-sensitive, high-volume
-  workloads" (nano-tier successor).
-- **Model pages** - https://developers.openai.com/api/docs/models/gpt-5.6-sol,
-  `.../gpt-5.6-terra`, `.../gpt-5.6-luna`, `.../gpt-6-astra`
-  Sol, Terra and Luna accept `none, low, medium (default), high, xhigh, max`. Astra
-  accepts `low` to `max` and returns HTTP 400 on `none`. Astra is Responses and Chat
-  Completions only (no Realtime, Assistants, fine-tuning, embeddings).
+  Base prices exclude tool charges and service-tier/regional premiums. Current
+  model pages specify higher rates for prompts over 272K input tokens: 2x input
+  and cache, 1.5x output for the full request. Cached input is model-specific,
+  not a universal 10%. API prices do not describe subscription usage allowances.
 - **Reasoning guide** - https://developers.openai.com/api/docs/guides/reasoning
   Level guidance: `none` for latency-critical tasks that do not benefit from
   reasoning; `low` for "efficient reasoning with modest latency increase... tool-use,
@@ -100,3 +102,26 @@ when models change. Official OpenAI material first, independent articles after.
   warns against stacking two unconditional "query the graph first" instruction blocks
   when an MCP graph is also connected, which is why the router picks one graph per
   project.
+
+## Executable quota sources (verified 2026-10-17)
+
+- Codex App Server: https://learn.chatgpt.com/docs/app-server,
+  initialize/initialized and account/rateLimits/read; retain native durations,
+  bucket IDs, usedPercent and resetsAt. No model inference is needed for a query.
+- Claude Code statusline: https://code.claude.com/docs/en/statusline,
+  rate_limits.five_hour/seven_day use used_percentage and resets_at. Fields can
+  be absent; native stdin/file snapshots need a capture timestamp for freshness.
+- CLI policy and schema live in tools/agent-router in this repository. Recommendations
+  must be applied by the caller; subscription quota cannot be derived from API prices.
+
+## Plugin/runtime integration (2026-10-17)
+
+- Both host packages carry the skill-local scripts/agent-router launcher and the
+  root Rust source/runtime helper. No unsupported native-install manifest fields
+  are used. Complete plugin roots can build on first launcher use; copied skills
+  depend on the installer's user/project runtime. No writes go to plugin caches.
+- Sources: https://developers.openai.com/plugins/build/plugins and
+  https://code.claude.com/docs/en/plugins-reference (bundled scripts and resources).
+- install.sh prepares the bundled runtime even with --no-external; --no-router is
+  the explicit preparation opt-out. Native binaries are reused or compiled with
+  Cargo. Custom policy is preserved separately from distributed defaults.

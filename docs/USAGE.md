@@ -2,6 +2,24 @@
 
 How to install the skills in this repository and how to use `agent-router` day to day.
 
+For a local executable that applies an editable YAML matrix and quota-aware token
+budgets, see the [agent-router CLI](../tools/agent-router/README.md). It supports
+manual remaining percentages, live Codex quota queries, and Claude statusline JSON.
+It emits a recommendation for the caller to apply. The installer prepares it
+automatically for plugins and copied `agent-router` skills, even with `--no-external`.
+Use `--no-router` to skip that step. A directly installed plugin's bundled launcher
+can also prepare the runtime on first use. Cargo/Rust 1.89+ and native build tools
+are required only when no compatible native build is available. Set
+`AI_SKILLS_ROUTER_BINARY` to reuse a trusted native binary of the same crate version.
+
+User runtime: `${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router`.
+Project runtime: `DIR/.ai-skills/agent-router`. `AI_SKILLS_ROUTER_HOME` overrides
+these defaults. The installer reports the absolute binary path; the skill-local
+`scripts/agent-router` launcher works without PATH changes. On Windows use Git Bash
+for shell launchers, or invoke the installed `.exe` directly from PowerShell.
+`--list` reports router status without compiling. Update refreshes an unmodified
+matrix and preserves a custom `models.yaml`, writing new defaults to `models.yaml.dist`.
+
 ## 1. Install
 
 From the repository root:

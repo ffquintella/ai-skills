@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Plugin/repository entry point; arguments after -- go to the native CLI.
+set -euo pipefail
+root="$(cd "$(dirname "$0")/.." && pwd)"
+# A globally installed plugin can serve a project-scoped runtime and its custom
+# matrix. An explicit environment override or --runtime-dir still takes priority.
+if [ -z "${AI_SKILLS_ROUTER_HOME:-}" ]; then
+  probe="$PWD"
+  while :; do
+    if [ -d "$probe/.ai-skills/agent-router" ]; then
+      export AI_SKILLS_ROUTER_HOME="$probe/.ai-skills/agent-router"
+      break
+    fi
+    parent="$(dirname "$probe")"
+    [ "$parent" != "$probe" ] || break
+    probe="$parent"
+  done
+fi
+exec bash "$root/scripts/router-runtime.sh" --root "$root" "$@"

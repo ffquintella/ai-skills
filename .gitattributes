@@ -1,2 +1,6 @@
 # Bash scripts must also execute in Windows checkouts with core.autocrlf=true.
 *.sh text eol=lf
+# Skill entry points intentionally have no extension.
+scripts/agent-router text eol=lf
+openai/agent-router/scripts/agent-router text eol=lf
+claude/agent-router/scripts/agent-router text eol=lf

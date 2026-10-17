@@ -1,18 +1,28 @@
 # Sources behind the routing matrix
 
-Collected 2026-09-14. Numbers are quoted as reported by each source; re-check them
-when models change. Official Anthropic material first, independent articles after.
+Model catalog, prices and effort verified 2026-10-17. Other background collected
+2026-09-14; historical benchmarks below are not evaluations of the new defaults. Official Anthropic material first, independent articles after.
 
 ## Official documentation and Anthropic engineering posts
 
+- **Current model catalog** - https://platform.claude.com/docs/en/models/overview
+  General-purpose lineup: claude-haiku-5-5, claude-sonnet-5-5,
+  claude-opus-5-5, claude-fable-5-1. All list 1M context and 128K max output.
+  Templates use full IDs rather than moving aliases. Specialized/restricted
+  models are outside the default routing ladder.
+- **Pricing** - https://platform.claude.com/docs/en/about-claude/pricing
+  Standard Claude API input/output USD per 1M tokens: Haiku 5.5 $0.10/$0.50
+  for prompts up to 100,000 tokens, $0.50/$2.50 above that; Sonnet 5.5 $2/$10;
+  Opus 5.5 $4/$20; Fable 5.1 $10/$50. Partner and subscription billing differs.
+  Fable is 2.5x current Opus, rather than the old 2x ratio. Haiku-relative cost
+  comparisons in the skill use its short-prompt input rate.
 - **Effort parameter** - https://platform.claude.com/docs/en/build-with-claude/effort
-  Five levels, `high` is the default and equals omitting the parameter. `low` is
-  recommended for "simpler tasks that need the best speed and lowest costs, such as
-  subagents". Haiku 4.5 is not in the supported-model list, so no effort on Haiku.
-  Per model: Fable 5.1 and Opus 5 start at `high`, step up to `xhigh`/`max` only for
-  capability-sensitive agentic work; Sonnet 5 `medium` is "comparable to Sonnet 4.6 at
-  high effort". Changing top-level effort mid-conversation invalidates the prompt cache,
-  which is why effort is pinned per agent rather than toggled in the main session.
+  All four current models support low/medium/high/xhigh/max. Opus 5.5 and
+  Haiku 5.5 default to medium; Sonnet 5.5 and Fable 5.1 to high. Haiku low fits
+  short tool tasks, but long prompts can cause skipped checks; raise effort for
+  instruction-heavy work. The API supports per-message effort changes with a
+  beta header on supported platforms, preserving cache. Agent templates pin
+  effort for predictable Claude Code routing; this is not an API limitation.
 - **Anthropic cost-optimization guidance** (bundled with Claude Code's `claude-api`
   skill, `shared/cost-optimization.md`, section 2.6). Measured with Fable 5 on research
   benchmarks: `low` gave up 1 to 3 points for a third to a half off cost per task;
@@ -105,3 +115,26 @@ when models change. Official Anthropic material first, independent articles afte
   warns against stacking two unconditional "query the graph first" instruction blocks
   when an MCP graph is also connected, which is why the router picks one graph per
   project.
+
+## Executable quota sources (verified 2026-10-17)
+
+- Codex App Server: https://learn.chatgpt.com/docs/app-server,
+  initialize/initialized and account/rateLimits/read; retain native durations,
+  bucket IDs, usedPercent and resetsAt. No model inference is needed for a query.
+- Claude Code statusline: https://code.claude.com/docs/en/statusline,
+  rate_limits.five_hour/seven_day use used_percentage and resets_at. Fields can
+  be absent; native stdin/file snapshots need a capture timestamp for freshness.
+- CLI policy and schema live in tools/agent-router in this repository. Recommendations
+  must be applied by the caller; subscription quota cannot be derived from API prices.
+
+## Plugin/runtime integration (2026-10-17)
+
+- Both host packages carry the skill-local scripts/agent-router launcher and the
+  root Rust source/runtime helper. No unsupported native-install manifest fields
+  are used. Complete plugin roots can build on first launcher use; copied skills
+  depend on the installer's user/project runtime. No writes go to plugin caches.
+- Sources: https://developers.openai.com/plugins/build/plugins and
+  https://code.claude.com/docs/en/plugins-reference (bundled scripts and resources).
+- install.sh prepares the bundled runtime even with --no-external; --no-router is
+  the explicit preparation opt-out. Native binaries are reused or compiled with
+  Cargo. Custom policy is preserved separately from distributed defaults.

@@ -1,8 +1,9 @@
 ---
 name: scout
-description: Read-only lookup agent for "where is X", "how does Y work", "which files reference Z" questions in this repository; queries the graphify code graph first when graphify-out/ exists. Cheapest tier (Haiku); no effort control. Use for exploration whose output would otherwise flood the main context.
+description: Read-only lookup agent for "where is X", "how does Y work", "which files reference Z" questions in this repository; queries the graphify code graph first when graphify-out/ exists. Cheapest tier (Haiku); low effort. Use for exploration whose output would otherwise flood the main context.
 tools: Read, Grep, Glob, Bash
-model: haiku
+model: claude-haiku-5-5
+effort: low
 ---
 
 You answer one scoped question about the codebase and return only the conclusion.
