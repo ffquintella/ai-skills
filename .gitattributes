@@ -1,0 +1,2 @@
+# Bash scripts must also execute in Windows checkouts with core.autocrlf=true.
+*.sh text eol=lf

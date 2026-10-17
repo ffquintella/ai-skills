@@ -23,6 +23,26 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENDORS="claude openai"
 
+# Git Bash uses POSIX paths internally; native CLIs and persisted MCP commands
+# need Windows paths. Keep Unix behavior unchanged.
+IS_WINDOWS="no"
+case "$(uname -s)" in MINGW*|MSYS*) IS_WINDOWS="yes" ;; esac
+native_path() {
+  if [ "$IS_WINDOWS" = "yes" ]; then cygpath -am "$1"; else printf '%s\n' "$1"; fi
+}
+# Normalize Windows paths supplied by the PowerShell launcher (including spaces).
+shell_path() {
+  if [ "$IS_WINDOWS" = "yes" ]; then cygpath -u "$1"; else printf '%s\n' "$1"; fi
+}
+uv_install_hint() {
+  if [ "$IS_WINDOWS" = "yes" ]; then
+    warn '  In PowerShell: winget install --id astral-sh.uv -e'
+    warn '  Restart your terminal, then rerun the installer.'
+  else
+    warn '  curl -LsSf https://astral.sh/uv/install.sh | sh'
+  fi
+}
+
 # External skills are generated and versioned by a third-party CLI, so the repo
 # does not keep a copy: the installer installs the CLI and lets it write the
 # skill. See external_* below.
@@ -143,6 +163,9 @@ py_is_310() {
 # binaries such as Homebrew's python3.14, which do not replace python3.
 find_python310() {
   local cand
+  if [ "$IS_WINDOWS" = "yes" ] && command -v python >/dev/null 2>&1 && py_is_310 python; then
+    command -v python; return 0
+  fi
   if command -v python3 >/dev/null 2>&1 && py_is_310 python3; then
     command -v python3; return 0
   fi
@@ -176,9 +199,13 @@ check_python310() {
     warn "  uv is installed and downloads a 3.10+ interpreter for both, so they will work."
   else
     warn "  The Cortex plugin can still provision its own Python on first launch, but graphify needs uv or a 3.10+ python3:"
-    warn "    curl -LsSf https://astral.sh/uv/install.sh | sh"
+    uv_install_hint
   fi
-  warn "  For a system-wide python3: brew install python@3.12, or uv python install 3.12 --default"
+  if [ "$IS_WINDOWS" = "yes" ]; then
+    warn "  With uv: uv python install 3.12"
+  else
+    warn "  For a system-wide python3: brew install python@3.12, or uv python install 3.12 --default"
+  fi
 }
 
 # ------------------------------------------------------- external: graphify ---
@@ -191,6 +218,7 @@ check_python310() {
 # be on PATH right after `uv tool install`.
 graphify_bin() {
   if command -v graphify >/dev/null 2>&1; then command -v graphify
+  elif [ "$IS_WINDOWS" = "yes" ] && [ -x "$HOME/.local/bin/graphify.exe" ]; then echo "$HOME/.local/bin/graphify.exe"
   elif [ -x "$HOME/.local/bin/graphify" ]; then echo "$HOME/.local/bin/graphify"
   fi
 }
@@ -253,7 +281,7 @@ ensure_graphify_cli() {
     pipx install ${PYTHON310:+--python "$PYTHON310"} "$GRAPHIFY_PACKAGE" 2>&1 | sed 's/^/    /'
   else
     warn "graphify: needs uv or pipx to install the CLI (Python 3.10+). Install uv, then rerun:"
-    warn "  curl -LsSf https://astral.sh/uv/install.sh | sh"
+    uv_install_hint
     return 1
   fi
   [ -n "$(graphify_bin)" ] || { warn "graphify: CLI installed but not found; run 'uv tool update-shell' and rerun."; return 1; }
@@ -372,6 +400,7 @@ install_cortex_plugin() {
 # Absolute path of the hypermnesia-mcp command, or empty.
 cortex_bin() {
   if command -v "$CORTEX_PACKAGE" >/dev/null 2>&1; then command -v "$CORTEX_PACKAGE"
+  elif [ "$IS_WINDOWS" = "yes" ] && [ -x "$HOME/.local/bin/$CORTEX_PACKAGE.exe" ]; then echo "$HOME/.local/bin/$CORTEX_PACKAGE.exe"
   elif [ -x "$HOME/.local/bin/$CORTEX_PACKAGE" ]; then echo "$HOME/.local/bin/$CORTEX_PACKAGE"
   fi
 }
@@ -403,7 +432,7 @@ ensure_cortex_package() {
       || { warn "cortex-memory: installing the Cortex server failed; see the output above."; return 1; }
   else
     warn "cortex-memory: needs uv or pipx to install the Cortex server for Codex:"
-    warn "  curl -LsSf https://astral.sh/uv/install.sh | sh"
+    uv_install_hint
     return 1
   fi
   [ -n "$(cortex_bin)" ] || { warn "cortex-memory: Cortex server installed but $CORTEX_PACKAGE not found; run 'uv tool update-shell' and rerun."; return 1; }
@@ -423,7 +452,7 @@ install_cortex_mcp() {
     return 0
   fi
   ensure_cortex_package || return 0
-  bin="$(cortex_bin)"
+  bin="$(native_path "$(cortex_bin)")"
   # Claude Code and Codex share one store through backend.json. Pin SQLite only
   # when no marker chose another backend, so an existing PostgreSQL setup wins.
   backend="$(sed -n 's/.*"backend"[^"]*"\([a-z]*\)".*/\1/p' "$HOME/.claude/methodology/backend.json" 2>/dev/null | head -1 || true)"
@@ -575,7 +604,7 @@ install_plugin_claude() {
   fi
   if ! claude_in_scope plugin marketplace list --json 2>/dev/null | grep -q "\"name\": *\"$PLUGIN_MARKETPLACE\""; then
     info "Claude Code: adding this checkout as the '$PLUGIN_MARKETPLACE' marketplace (scope $SCOPE)"
-    claude_in_scope plugin marketplace add "$REPO_DIR" --scope "$SCOPE" 2>&1 | sed 's/^/    /' \
+    claude_in_scope plugin marketplace add "$(native_path "$REPO_DIR")" --scope "$SCOPE" 2>&1 | sed 's/^/    /' \
       || { warn "Claude Code: 'claude plugin marketplace add' failed; see the output above."; return 0; }
   fi
   case "$status" in
@@ -613,7 +642,7 @@ install_plugin_openai() {
   fi
   if ! codex plugin marketplace list 2>/dev/null | grep -q "^$PLUGIN_MARKETPLACE "; then
     info "Codex: adding this checkout as the '$PLUGIN_MARKETPLACE' marketplace"
-    codex plugin marketplace add "$REPO_DIR" 2>&1 | sed 's/^/    /' \
+    codex plugin marketplace add "$(native_path "$REPO_DIR")" 2>&1 | sed 's/^/    /' \
       || { warn "Codex: 'codex plugin marketplace add' failed; see the output above."; return 0; }
   fi
   if [ "$status" = "installed" ] && [ "$MODE" != "update" ]; then
@@ -680,6 +709,7 @@ case "$VENDOR_FILTER" in
 esac
 
 if [ "$SCOPE" = "project" ]; then
+  PROJECT_DIR="$(shell_path "$PROJECT_DIR")"
   [ -d "$PROJECT_DIR" ] || die "Project directory not found: $PROJECT_DIR"
   PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
 fi
@@ -711,6 +741,7 @@ if [ "$NONINTERACTIVE" = "no" ] && [ -t 0 ] && [ "$SCOPE" = "user" ] && [ -z "$P
   choice="$(ask "Choice [1]: " "1")"
   if [ "$choice" = "2" ]; then
     PROJECT_DIR="$(ask "Project directory [$(pwd)]: " "$(pwd)")"
+    PROJECT_DIR="$(shell_path "$PROJECT_DIR")"
     [ -d "$PROJECT_DIR" ] || die "Project directory not found: $PROJECT_DIR"
     PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
     SCOPE="project"

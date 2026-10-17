@@ -80,6 +80,19 @@ Run the installer from the repository root:
 ./install.sh
 ```
 
+On Windows, install [Git for Windows](https://gitforwindows.org) with Git Bash,
+then run from Windows PowerShell 5.1 or PowerShell 7:
+
+```powershell
+.\install.ps1
+.\install.ps1 --all --vendor openai --project 'C:\Dev\my project' --no-external
+```
+
+This entry point accepts the same flags below and requires no WSL. If execution
+policy blocks it, use `powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1`
+with the desired flags. External runtimes require `uv` or `pipx` on PATH; restart
+the terminal after installing them.
+
 It detects whether Claude Code and OpenAI Codex are installed (CLI on PATH or their
 home directory) and skips any vendor that is missing. Then it asks for the scope
 (user level or a project directory), the method (the plugin, or individual skills), the

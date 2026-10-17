@@ -10,6 +10,12 @@ From the repository root:
 ./install.sh
 ```
 
+On Windows, install [Git for Windows](https://gitforwindows.org) including Git Bash,
+then use `.\install.ps1` in PowerShell. All flags in this guide work with that
+entry point too, including `--project 'C:\Dev\my project'`. WSL is not needed.
+If script execution is blocked, use
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1`.
+
 The installer walks through these questions:
 
 1. **Scope**: user level (`~/.claude/skills`, `~/.agents/skills`) or a project directory.
