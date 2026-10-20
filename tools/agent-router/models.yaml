@@ -1,4 +1,4 @@
-# Verified catalog: 2026-10-17. API USD / 1M text tokens, not subscription credits.
+# Verified catalog: 2026-10-20. API USD / 1M text tokens, not subscription credits.
 # IDs, costs, task requirements and budgets can change without recompilation.
 schema_version: 1
 effort_order: [none, low, medium, high, xhigh, max]
