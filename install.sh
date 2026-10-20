@@ -44,6 +44,45 @@ uv_install_hint() {
   fi
 }
 
+# `command -v codex` only proves a wrapper script is on PATH. The npm package
+# (@openai/codex) downloads a platform-specific vendor binary in a postinstall
+# step; a failed or skipped postinstall leaves the wrapper in place but makes
+# every subcommand fail with "spawn ... ENOENT". Cache the real check since
+# several call sites need it and it is a subprocess call.
+CODEX_CLI_STATUS=""   # missing | broken | ok
+codex_cli_status() {
+  if [ -z "$CODEX_CLI_STATUS" ]; then
+    if ! command -v codex >/dev/null 2>&1; then
+      CODEX_CLI_STATUS="missing"
+    elif codex --version >/dev/null 2>&1; then
+      CODEX_CLI_STATUS="ok"
+    else
+      CODEX_CLI_STATUS="broken"
+    fi
+  fi
+  echo "$CODEX_CLI_STATUS"
+}
+
+# codex ships two ways: `npm install -g @openai/codex` (the wrapper lands
+# under npm's global prefix, e.g. /opt/homebrew/lib/node_modules/@openai/codex
+# when that prefix is Homebrew's Node, which is why the path can say
+# "homebrew" even though brew never installed it) or the Homebrew cask, which
+# installs the native binary directly. Match the repair command to whichever
+# is actually present instead of guessing.
+codex_install_hint() {
+  if npm ls -g @openai/codex >/dev/null 2>&1; then
+    warn "  codex is installed via npm; reinstall the vendor binary:"
+    warn "    npm install -g @openai/codex@latest --force"
+  elif command -v brew >/dev/null 2>&1 && brew list --cask codex >/dev/null 2>&1; then
+    warn "  codex is installed via the Homebrew cask; reinstall it:"
+    warn "    brew reinstall --cask codex"
+  else
+    warn "  Reinstall it, matching however you installed it:"
+    warn "    npm install -g @openai/codex@latest --force"
+    warn "    brew install --cask codex"
+  fi
+}
+
 # External skills are generated and versioned by a third-party CLI, so the repo
 # does not keep a copy: the installer installs the CLI and lets it write the
 # skill. See external_* below.
@@ -107,7 +146,11 @@ vendor_detail() {
     claude)
       if command -v claude >/dev/null 2>&1; then echo "cli: $(command -v claude)"; else echo "cli not on PATH, ~/.claude present"; fi ;;
     openai)
-      if command -v codex >/dev/null 2>&1; then echo "cli: $(command -v codex)"; else echo "cli not on PATH, ~/.codex present"; fi ;;
+      case "$(codex_cli_status)" in
+        ok)      echo "cli: $(command -v codex)" ;;
+        broken)  echo "cli on PATH but fails to run (spawn ENOENT): $(command -v codex)" ;;
+        missing) echo "cli not on PATH, ~/.codex present" ;;
+      esac ;;
   esac
 }
 
@@ -472,10 +515,15 @@ ensure_cortex_package() {
 # scope even for a project install.
 install_cortex_mcp() {
   local bin backend env_args=""
-  if ! command -v codex >/dev/null 2>&1; then
-    warn "cortex-memory: the codex CLI is not on PATH, so the Cortex MCP server was not registered."
-    return 0
-  fi
+  case "$(codex_cli_status)" in
+    missing)
+      warn "cortex-memory: the codex CLI is not on PATH, so the Cortex MCP server was not registered."
+      return 0 ;;
+    broken)
+      warn "cortex-memory: the codex CLI is on PATH but fails to run, so the Cortex MCP server was not registered."
+      codex_install_hint
+      return 0 ;;
+  esac
   if codex mcp get "$CORTEX_MCP_NAME" >/dev/null 2>&1; then
     if [ "$MODE" = "update" ]; then ensure_cortex_package upgrade || true; fi
     ok "cortex-memory: Codex MCP server '$CORTEX_MCP_NAME' already registered"
@@ -505,8 +553,11 @@ cortex_memory_runtime_status() {
       command -v claude >/dev/null 2>&1 || { echo "plugin: claude CLI missing"; return; }
       echo "plugin: $(cortex_plugin_status)" ;;
     openai)
-      command -v codex >/dev/null 2>&1 || { echo "MCP: codex CLI missing"; return; }
-      if codex mcp get "$CORTEX_MCP_NAME" >/dev/null 2>&1; then echo "MCP: registered"; else echo "MCP: missing"; fi ;;
+      case "$(codex_cli_status)" in
+        missing) echo "MCP: codex CLI missing" ;;
+        broken)  echo "MCP: codex CLI broken" ;;
+        ok)      if codex mcp get "$CORTEX_MCP_NAME" >/dev/null 2>&1; then echo "MCP: registered"; else echo "MCP: missing"; fi ;;
+      esac ;;
   esac
 }
 
@@ -593,7 +644,7 @@ install_agents() {
 # not installed, and `codex plugin add` again is how it updates. Codex plugins
 # are user-level only and carry no hook; the skills rely on their descriptions.
 
-# installed | missing | no-cli
+# installed | missing | no-cli | broken-cli
 plugin_status() {
   case "$1" in
     claude)
@@ -603,8 +654,11 @@ plugin_status() {
         *) echo "missing" ;;
       esac ;;
     openai)
-      command -v codex >/dev/null 2>&1 || { echo "no-cli"; return; }
-      if codex plugin list 2>/dev/null | grep -q "^$PLUGIN_ID  *installed"; then echo "installed"; else echo "missing"; fi ;;
+      case "$(codex_cli_status)" in
+        missing) echo "no-cli" ;;
+        broken)  echo "broken-cli" ;;
+        ok)      if codex plugin list 2>/dev/null | grep -q "^$PLUGIN_ID  *installed"; then echo "installed"; else echo "missing"; fi ;;
+      esac ;;
   esac
 }
 
@@ -664,6 +718,11 @@ install_plugin_openai() {
   if [ "$status" = "no-cli" ]; then
     warn "Codex: the codex CLI is not on PATH, so the plugin was not installed. Run:"
     warn "  codex plugin marketplace add \"$REPO_DIR\" && codex plugin add $PLUGIN_ID"
+    return 0
+  fi
+  if [ "$status" = "broken-cli" ]; then
+    warn "Codex: the codex CLI is on PATH but fails to run (spawn ENOENT), so the plugin was not installed."
+    codex_install_hint
     return 0
   fi
   [ "$SCOPE" = "project" ] && warn "Codex: plugins are user-level only; installing for the user, not for $PROJECT_DIR."
@@ -850,9 +909,10 @@ if [ "$LIST_ONLY" = "yes" ]; then
   say "ai-skills plugin ($PLUGIN_ID):"
   for v in $AVAILABLE; do
     case "$(plugin_status "$v")" in
-      installed) tag="\033[32m[installed]\033[0m" ;;
-      missing)   tag="\033[90m[not installed]\033[0m" ;;
-      no-cli)    tag="\033[90m[CLI not on PATH]\033[0m" ;;
+      installed)  tag="\033[32m[installed]\033[0m" ;;
+      missing)    tag="\033[90m[not installed]\033[0m" ;;
+      no-cli)     tag="\033[90m[CLI not on PATH]\033[0m" ;;
+      broken-cli) tag="\033[31m[CLI broken]\033[0m" ;;
     esac
     printf '      %-13s %b\n' "$(vendor_label "$v")" "$tag"
   done
