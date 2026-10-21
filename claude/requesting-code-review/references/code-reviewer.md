@@ -1,7 +1,8 @@
 # Reviewer prompt template
 
 Fill the braces and pass the result as the prompt of the `reviewer` agent (or a
-`general-purpose` agent when the router templates are not installed). Pass nothing else:
+`general-purpose` agent with the router's fallback `model` when the templates are not
+installed). Pass nothing else:
 no session history, no hints about what you think is fine.
 
 ````text

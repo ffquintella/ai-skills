@@ -87,7 +87,8 @@ route it without re-deciding:
 State it as a line under the task title (`**Tier:** routine (builder)`) with a short reason
 when it is not obvious. It is a suggestion: the router decides at execution time, and a task
 that fails at its tier escalates one step. Projects without the agent templates use a
-general-purpose agent at the matching effort.
+general-purpose agent with the `model` from the `agent-router` fallback table (the effort
+cannot be set on that path).
 
 ## Step 5: write the document
 

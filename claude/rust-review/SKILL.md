@@ -30,7 +30,7 @@ invent defaults for the first three.
 | Parameter | Values | Meaning |
 | --- | --- | --- |
 | `threat_model` | `REMOTE`, `LOCAL_UNPRIVILEGED`, `BOTH` | Who the attacker is: network only, an unprivileged local user, or either |
-| `worker_model` | `haiku`, `sonnet`, `opus` | Model for the cluster workers; judges use `sonnet` or better. Suggest `sonnet`, `opus` for a crypto, parser or sandbox crate |
+| `worker_model` | `haiku`, `sonnet`, `opus` | Model for the cluster workers; judges use `sonnet` or better. Suggest `sonnet`, `opus` for a crypto, parser or sandbox crate. This skill fans out general-purpose workers and does not use the `agent-router` templates, so the choice is the user's: pass the alias exactly as given, and never fall back to the session model |
 | `severity_filter` | `all`, `medium`, `high` | Minimum severity shown in the report |
 | `scope_subpath` | optional path | Findings may be filed only inside it. Everything else (default `.`) is read-only context for callers and reachability |
 

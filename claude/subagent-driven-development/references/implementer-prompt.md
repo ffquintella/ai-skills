@@ -3,8 +3,8 @@
 Fill the placeholders and send as the `prompt` of an `Agent` call.
 
 - `subagent_type`: `builder`; `architect` for a complex task, or for a fix round after a
-  failed one (see the routing table in SKILL.md). General-purpose agent plus an explicit
-  `model` when the project has not installed the router's agents.
+  failed one (see the routing table in SKILL.md). General-purpose agent plus the `model`
+  from the `agent-router` fallback table when the project has not installed the router's agents.
 - `description`: `Implement Task N: <name>`
 - `run_in_background`: false
 

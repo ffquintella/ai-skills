@@ -47,7 +47,8 @@ Use the `reviewer` agent (Sonnet, high effort, read-only). Override to `model: o
 the diff touches authentication, authorization, secrets, rate limiting or other
 security-sensitive paths, as the router's review row says. If the project has not
 installed the `agent-router` templates, spawn a `general-purpose` agent with the same
-prompt. For a deep security audit of a Rust codebase, do not use this skill: the user
+prompt and the `model` from the `agent-router` fallback table (`sonnet`, or `opus` for
+security-sensitive paths). For a deep security audit of a Rust codebase, do not use this skill: the user
 has to ask for `rust-review` by name.
 
 The `reviewer` agent already reads `AGENTS.md` / `CLAUDE.md`, obtains the diff and reports
