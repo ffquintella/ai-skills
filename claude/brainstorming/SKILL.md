@@ -123,8 +123,9 @@ section serves, a decision attributed to the user that was really yours.
 Then run the builder check. Dispatch a fresh agent with
 [references/builder-check-prompt.md](references/builder-check-prompt.md), filling in the
 domain and the document path. Use a `scout` for a short document, or a general-purpose
-agent when the project has not installed the `agent-router` templates; this is a read,
-not a design task, so it never needs `architect`. Tell the user you are writing it up,
+agent with `model: "haiku"` (the fallback in `agent-router`) when the project has not
+installed the `agent-router` templates; this is a read, not a design task, so it never
+needs `architect`. Tell the user you are writing it up,
 that a reviewer will read it first and that you may come back once with a few questions.
 Do not hand over the document until the check is back.
 

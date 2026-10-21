@@ -156,7 +156,8 @@ them to confirm only vendor wording differs.
 - **README**: add the skill's row to the table in `README.md`, with both links.
 - **Delegation inside a skill** goes through `agent-router` and its agents (`scout`,
   `builder`, `architect`, `reviewer`, `test-runner`), falling back to a general-purpose
-  agent when the project has not installed them. Link `test-driven-development`,
+  agent with the `model` from the `agent-router` fallback table when the project has not
+  installed them. Link `test-driven-development`,
   `systematic-debugging` and `dispatching-parallel-agents` instead of restating them.
 - **Check**: `./install.sh --list` should show the new skill for both vendors. The
   installer and, when it is installed, the ai-skills plugin pick skills up from the

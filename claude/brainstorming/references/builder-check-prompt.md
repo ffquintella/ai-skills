@@ -1,7 +1,8 @@
 # Builder check prompt
 
 Dispatch a fresh agent with this prompt once the written design exists (a `scout`, or a
-general-purpose agent if the project has not installed the `agent-router` templates). Fill
+general-purpose agent with `model: "haiku"` if the project has not installed the
+`agent-router` templates). Fill
 in the domain and the document path. The agent must not see the conversation: the point is
 to test whether the document stands on its own.
 

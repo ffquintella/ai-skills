@@ -109,6 +109,24 @@ routine implementation and review on Sonnet at `high`, and complex work on Opus 
 `xhigh`. These are project routing defaults, not measured quality claims for the
 new releases. Try `medium` on mechanical builder work after measuring quality.
 
+### Fallback without the templates
+
+When the project has no `.claude/agents/` templates, dispatch a `general-purpose` agent
+and pass `model` with the alias for the tier. The Agent tool's `model` takes only the
+aliases `haiku`, `sonnet`, `opus` and `fable`, not full IDs, and it cannot set an effort
+level, so the fallback keeps the model choice and drops the effort.
+
+| Tier | Agent call |
+| --- | --- |
+| lookup, verify | `subagent_type: "general-purpose"`, `model: "haiku"` |
+| routine change, review | `model: "sonnet"` |
+| complex change, security-sensitive review | `model: "opus"` |
+| frontier escalation | `model: "fable"`, only as the escalation rule below allows |
+
+Never omit `model`: an omitted model inherits the coordinator's own, usually the most
+expensive one. Skills that fall back to a general-purpose agent refer to this table
+instead of choosing a model themselves.
+
 Use `claude-fable-5-1` only when the user asks for it by name or an `architect` run
 at `xhigh` failed on a frontier problem (novel algorithm, deep concurrency bug).
 It costs 2.5x Opus 5.5 at base input and output rates.
