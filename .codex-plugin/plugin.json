@@ -1,6 +1,6 @@
 {
   "name": "ai-skills",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Development workflow skills for Codex: design, planning, TDD, debugging, subagent routing, code review, verification and branch finishing.",
   "author": {
     "name": "Felipe F Quintella",
