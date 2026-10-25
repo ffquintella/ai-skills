@@ -46,6 +46,18 @@ helper="$source_root/scripts/router-runtime.sh"
 run_helper() { bash "$helper" --root "$source_root" --runtime-dir "$runtime" "$@"; }
 fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
 
+# Confirm the default destination follows each host's user-data convention.
+default_status() { env -u AI_SKILLS_ROUTER_HOME -u XDG_DATA_HOME -u LOCALAPPDATA -u APPDATA bash "$repo/scripts/router-runtime.sh" --root "$repo" --status; }
+default_runtime="$HOME/.local/share/ai-skills/agent-router"
+case "$(uname -s)" in
+  MINGW*|MSYS*) default_runtime="$(cygpath -u "$(cygpath -F 28 2>/dev/null || cygpath -F 26)")/ai-skills/agent-router" ;;
+  Darwin) default_runtime="$HOME/Library/Application Support/ai-skills/agent-router" ;;
+esac
+mkdir -p "$default_runtime"
+touch "$default_runtime/agent-router.exe"
+[ "$(default_status)" = outdated ] || fail 'default runtime directory did not match host convention'
+rm -rf "$default_runtime"
+
 # A listing must not initialize directories or touch the compiler.
 status="$(run_helper --status)"
 [ "$status" = 'missing' ] || fail 'initial status should be missing'
