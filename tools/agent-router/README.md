@@ -34,7 +34,9 @@ goes to stderr so JSON stdout remains clean.
 
 Runtime paths:
 
-- User: `${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router`.
+- User: Windows `%LOCALAPPDATA%/ai-skills/agent-router` (falling back to
+  `%APPDATA%`); macOS `~/Library/Application Support/ai-skills/agent-router`;
+  Linux/other Unix `${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router`.
 - Project installer: `<project>/.ai-skills/agent-router`.
 - `AI_SKILLS_ROUTER_HOME` overrides either; source launcher `--runtime-dir PATH`
   also selects an explicit destination.

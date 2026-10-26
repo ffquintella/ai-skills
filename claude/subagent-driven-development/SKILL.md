@@ -68,7 +68,8 @@ skill only says which tier each role belongs to:
 | Test or build runs for evidence | `test-runner` (Haiku) | Failures only. |
 
 When the project has not installed these agents, use a general-purpose agent and set `model`
-on every call: an omitted model inherits your own, usually the most expensive.
+on every call from the fallback table in `agent-router`: an omitted model inherits your own,
+usually the most expensive.
 
 **Escalation ladder** (from the router): `builder` -> `architect` -> `architect` with
 `model: fable` only when the user asks for it or a frontier-hard problem defeated `architect`.
@@ -230,8 +231,8 @@ The coordinator is the most expensive seat: it reads every dispatch result and u
 on your most capable model. Claude Code allows nested agents (three layers below the main
 conversation by default; `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` adjusts it), so the whole
 loop can run one layer down. Only when the user asks for it, or says the session model is too
-expensive for coordination, dispatch **one** orchestrator agent on a mid-tier model
-(`model: sonnet`) with the plan path and the instruction to follow this skill end to end. It
+expensive for coordination, dispatch **one** orchestrator agent on the `builder` tier model
+(`model: "sonnet"`, the `agent-router` fallback alias) with the plan path and the instruction to follow this skill end to end. It
 dispatches its own implementers and reviewers per the routing above, and the workspace and
 ledger on disk lose nothing to the extra layer. Its final message must carry **Rulings I
 made** verbatim, and you relay it rather than summarize it. Do this for a whole plan only;

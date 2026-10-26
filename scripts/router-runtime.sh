@@ -4,7 +4,18 @@
 set -euo pipefail
 
 runtime_root="$(cd "$(dirname "$0")/.." && pwd)"
-runtime_dir="${AI_SKILLS_ROUTER_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router}"
+runtime_user_data="${XDG_DATA_HOME:-}"
+case "$(uname -s)" in
+  MINGW*|MSYS*)
+    runtime_user_data="${LOCALAPPDATA:-${APPDATA:-}}"
+    if [ -z "$runtime_user_data" ] && command -v cygpath >/dev/null 2>&1; then
+      runtime_user_data="$(cygpath -F 28 2>/dev/null || true)"
+      [ -n "$runtime_user_data" ] || runtime_user_data="$(cygpath -F 26 2>/dev/null || true)"
+    fi ;;
+  Darwin) runtime_user_data="${HOME}/Library/Application Support" ;;
+esac
+if [ -z "$runtime_user_data" ]; then runtime_user_data="${XDG_DATA_HOME:-$HOME/.local/share}"; fi
+runtime_dir="${AI_SKILLS_ROUTER_HOME:-$runtime_user_data/ai-skills/agent-router}"
 runtime_action=run
 while [ $# -gt 0 ]; do
   case "$1" in

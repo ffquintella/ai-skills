@@ -55,7 +55,9 @@ needed. The installer prepares it upfront for plugins and copied skills. A copie
 skill uses its project runtime or the shared user runtime without needing the
 original checkout. No PATH or shell-profile edits are required.
 
-Default user path: `${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router`;
+Default user path: Windows `%LOCALAPPDATA%/ai-skills/agent-router` (falling back
+to `%APPDATA%`), macOS `~/Library/Application Support/ai-skills/agent-router`,
+and Linux/other Unix `${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router`;
 project install: `<project>/.ai-skills/agent-router`; `AI_SKILLS_ROUTER_HOME`
 overrides either. The full plugin also discovers a nearby project runtime from
 the current working directory. Existing custom `models.yaml` is preserved on

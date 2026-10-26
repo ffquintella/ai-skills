@@ -23,7 +23,20 @@ if [ -z "$runtime" ]; then
   project_root="$(cd "$here/../../../.." && pwd)"
   if [ -d "$project_root/.ai-skills/agent-router" ]; then
     runtime="$project_root/.ai-skills/agent-router"
-  else runtime="${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router"; fi
+  else
+    user_data="${XDG_DATA_HOME:-}"
+    case "$(uname -s)" in
+      MINGW*|MSYS*)
+        user_data="${LOCALAPPDATA:-${APPDATA:-}}"
+        if [ -z "$user_data" ] && command -v cygpath >/dev/null 2>&1; then
+          user_data="$(cygpath -F 28 2>/dev/null || true)"
+          [ -n "$user_data" ] || user_data="$(cygpath -F 26 2>/dev/null || true)"
+        fi ;;
+      Darwin) user_data="$HOME/Library/Application Support" ;;
+    esac
+    [ -n "$user_data" ] || user_data="${XDG_DATA_HOME:-$HOME/.local/share}"
+    runtime="$user_data/ai-skills/agent-router"
+  fi
 fi
 suffix=''
 case "$(uname -s)" in MINGW*|MSYS*) suffix=.exe; runtime="$(cygpath -u "$runtime")" ;; esac
