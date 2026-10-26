@@ -46,15 +46,17 @@ helper="$source_root/scripts/router-runtime.sh"
 run_helper() { bash "$helper" --root "$source_root" --runtime-dir "$runtime" "$@"; }
 fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
 
-# Confirm the default destination follows each host's user-data convention.
-default_status() { env -u AI_SKILLS_ROUTER_HOME -u XDG_DATA_HOME -u LOCALAPPDATA -u APPDATA bash "$repo/scripts/router-runtime.sh" --root "$repo" --status; }
-default_runtime="$HOME/.local/share/ai-skills/agent-router"
+# Confirm the default destination follows each host's user-data convention. HOME
+# points into the test root so a developer's real runtime is never touched.
+default_home="$test_root/home"
+default_status() { env -u AI_SKILLS_ROUTER_HOME -u XDG_DATA_HOME -u LOCALAPPDATA -u APPDATA HOME="$default_home" bash "$repo/scripts/router-runtime.sh" --root "$repo" --status; }
+default_runtime="$default_home/.local/share/ai-skills/agent-router"; default_suffix=''
 case "$(uname -s)" in
-  MINGW*|MSYS*) default_runtime="$(cygpath -u "$(cygpath -F 28 2>/dev/null || cygpath -F 26)")/ai-skills/agent-router" ;;
-  Darwin) default_runtime="$HOME/Library/Application Support/ai-skills/agent-router" ;;
+  MINGW*|MSYS*) default_runtime="$(cygpath -u "$(cygpath -F 28 2>/dev/null || cygpath -F 26)")/ai-skills/agent-router"; default_suffix=.exe ;;
+  Darwin) default_runtime="$default_home/Library/Application Support/ai-skills/agent-router" ;;
 esac
 mkdir -p "$default_runtime"
-touch "$default_runtime/agent-router.exe"
+touch "$default_runtime/agent-router$default_suffix"
 [ "$(default_status)" = outdated ] || fail 'default runtime directory did not match host convention'
 rm -rf "$default_runtime"
 

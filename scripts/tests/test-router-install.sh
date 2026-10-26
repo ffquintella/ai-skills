@@ -17,7 +17,12 @@ for vendor in claude codex; do
   cat > "$test_root/bin/$vendor" <<'CLI'
 #!/usr/bin/env bash
 printf '%s %s\n' "$(basename "$0")" "$*" >> "$AI_SKILLS_TEST_CLI_LOG"
-case "$*" in 'plugin list --json'|'plugin marketplace list --json') printf '[]\n' ;; esac
+# Answer install.sh's capability probes the way a current Claude Code CLI does.
+case "$*" in
+  'plugin list --json'|'plugin marketplace list --json') printf '[]\n' ;;
+  'plugin marketplace add --help') printf '  --scope <scope>\n' ;;
+  'plugin install --help') printf '  --marketplace <name>\n' ;;
+esac
 exit 0
 CLI
   chmod +x "$test_root/bin/$vendor"
@@ -27,6 +32,12 @@ export AI_SKILLS_ROUTER_BINARY="$fixture_binary"
 export PATH="$test_root/bin:$PATH"
 export XDG_DATA_HOME="$test_root/user data"
 unset AI_SKILLS_ROUTER_HOME
+# The user runtime follows each host's convention, kept inside the fixture HOME.
+user_runtime="$XDG_DATA_HOME/ai-skills/agent-router"
+case "$(uname -s)" in
+  MINGW*|MSYS*) export LOCALAPPDATA="$XDG_DATA_HOME" ;;
+  Darwin) user_runtime="$test_root/home/Library/Application Support/ai-skills/agent-router" ;;
+esac
 installer() {
   HOME="$test_root/home" CODEX_HOME="$test_root/home/.codex" CLAUDE_CONFIG_DIR="$test_root/home/.claude" \
     bash "$repo/install.sh" "$@"
@@ -57,9 +68,9 @@ installer --all --skills --update --project "$test_root/project with spaces" --n
   HOME="$test_root/home" bash "$repo/scripts/agent-router" -- --provider openai --task lookup --weekly-remaining 8 > "$test_root/plugin-decision"
 )
 grep -q '"mode":"extreme"' "$test_root/plugin-decision" || fail 'plugin launcher did not use project runtime'
-[ ! -d "$XDG_DATA_HOME/ai-skills/agent-router" ] || fail 'project plugin call wrote user runtime'
+[ ! -d "$user_runtime" ] || fail 'project plugin call wrote user runtime'
 installer --all --skills --user --no-external > "$test_root/user-installed"
-[ -f "$XDG_DATA_HOME/ai-skills/agent-router/models.yaml" ] || fail 'user runtime not installed'
+[ -f "$user_runtime/models.yaml" ] || fail 'user runtime not installed'
 for vendor_dir in .claude .agents; do
   HOME="$test_root/home" bash "$test_root/home/$vendor_dir/skills/agent-router/scripts/agent-router" --version > "$test_root/version"
   grep -q '^agent-router ' "$test_root/version" || fail 'user skill launcher failed'

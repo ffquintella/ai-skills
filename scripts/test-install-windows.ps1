@@ -8,6 +8,7 @@ $previousRouterHome = $env:AI_SKILLS_ROUTER_HOME
 $previousCodexHome = $env:CODEX_HOME
 $previousClaudeConfig = $env:CLAUDE_CONFIG_DIR
 $previousCliLog = $env:AI_SKILLS_TEST_CLI_LOG
+$previousLocalAppData = $env:LOCALAPPDATA
 $project = Join-Path $sandbox 'project with spaces'
 $optOutProject = Join-Path $sandbox 'router opt out'
 $launcher = Join-Path $repo 'install.ps1'
@@ -26,6 +27,8 @@ try {
     $env:CODEX_HOME = Join-Path $env:HOME '.codex'
     $env:CLAUDE_CONFIG_DIR = Join-Path $env:HOME '.claude'
     $env:AI_SKILLS_ROUTER_HOME = $null
+    # The default user runtime lives under LOCALAPPDATA; keep it inside the sandbox.
+    $env:LOCALAPPDATA = Join-Path $sandbox 'local app data'
     New-Item -ItemType Directory -Path (Join-Path $env:HOME '.codex'), (Join-Path $env:HOME '.claude') -Force | Out-Null
     # Fixture CLIs keep plugin commands away from the actual user registrations.
     $fixtureBin = Join-Path $sandbox 'fixture bin'
@@ -35,6 +38,9 @@ try {
 #!/usr/bin/env bash
 printf '%s %s\n' "$(basename "$0")" "$*" >> "$AI_SKILLS_TEST_CLI_LOG"
 if [ "$*" = 'plugin list --json' ] || [ "$*" = 'plugin marketplace list --json' ]; then printf '[]\n'; fi
+# Answer install.sh's capability probes the way a current Claude Code CLI does.
+if [ "$*" = 'plugin marketplace add --help' ]; then printf '  --scope <scope>\n'; fi
+if [ "$*" = 'plugin install --help' ]; then printf '  --marketplace <name>\n'; fi
 exit 0
 '@
     foreach ($cli in @('claude', 'codex')) {
@@ -93,7 +99,7 @@ exit 0
     if (-not (Test-Path (Join-Path $env:AI_SKILLS_ROUTER_HOME 'models.yaml'))) { throw 'Plugin mode did not prepare override runtime' }
     $calls = Get-Content -LiteralPath $env:AI_SKILLS_TEST_CLI_LOG -Raw
     if ($calls -notmatch 'claude plugin install ai-skills@ai-skills' -or $calls -notmatch 'codex plugin add ai-skills@ai-skills') { throw 'Plugin fixture commands were not called for both vendors' }
-    if (Test-Path (Join-Path $env:HOME '.local/share/ai-skills/agent-router')) { throw 'Override leaked into user runtime' }
+    if (Test-Path (Join-Path $env:LOCALAPPDATA 'ai-skills/agent-router')) { throw 'Override leaked into user runtime' }
     Write-Output 'PASS: help/list read-only, flags, vendors, spaced paths, install/update, launchers, runtime, policy/agents preserved, opt-out and fixture plugins.'
 } finally {
     $env:HOME = $previousHome
@@ -102,6 +108,7 @@ exit 0
     $env:CODEX_HOME = $previousCodexHome
     $env:CLAUDE_CONFIG_DIR = $previousClaudeConfig
     $env:AI_SKILLS_TEST_CLI_LOG = $previousCliLog
+    $env:LOCALAPPDATA = $previousLocalAppData
     # Delete only the unique test directory created above.
     if (Test-Path -LiteralPath $sandbox) {
         $resolvedSandbox = [IO.Path]::GetFullPath((Resolve-Path -LiteralPath $sandbox).Path)

@@ -175,14 +175,23 @@ agents_root() {
 }
 
 # Keep mutable runtime/policy outside copied skills and plugin caches. An explicit
-# override wins over both project and user defaults.
+# override wins over both project and user defaults. The user default must match
+# scripts/router-runtime.sh and the copied skill launchers, which look there.
 router_runtime_dir() {
+  local user_data="${XDG_DATA_HOME:-}"
   if [ -n "${AI_SKILLS_ROUTER_HOME:-}" ]; then
     shell_path "$AI_SKILLS_ROUTER_HOME"
   elif [ "$SCOPE" = "project" ]; then
     printf '%s\n' "$PROJECT_DIR/.ai-skills/agent-router"
   else
-    shell_path "${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router"
+    if [ "$IS_WINDOWS" = "yes" ]; then
+      user_data="${LOCALAPPDATA:-${APPDATA:-}}"
+      [ -n "$user_data" ] || user_data="$(cygpath -F 28 2>/dev/null || true)"
+      [ -n "$user_data" ] || user_data="$(cygpath -F 26 2>/dev/null || true)"
+    elif [ "$(uname -s)" = "Darwin" ]; then
+      user_data="$HOME/Library/Application Support"
+    fi
+    shell_path "${user_data:-$HOME/.local/share}/ai-skills/agent-router"
   fi
 }
 
