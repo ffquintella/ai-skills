@@ -6,7 +6,8 @@ Agent skills for Claude Code (`claude/`) and OpenAI Codex (`openai/`), installed
 The repository root is also the `ai-skills` plugin for both hosts (`.claude-plugin/` serves
 `claude/` plus `hooks/`, `.codex-plugin/` serves `openai/`), so a new skill folder ships in
 the plugin without manifest edits. When a change should reach installed Codex plugins, bump
-the version with `scripts/bump-version.sh <x.y.z>`; `--check` verifies the manifests agree.
+the version with `scripts/bump-version.sh <x.y.z>`; `--check` verifies the manifests and the
+`tools/agent-router` crate agree.
 Skills adapted from obra/superpowers are listed in `THIRD-PARTY-NOTICES.md`.
 
 ## Persistent memory (Cortex)
