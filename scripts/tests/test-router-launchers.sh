@@ -15,7 +15,9 @@ cleanup() {
 trap cleanup EXIT
 project="$test_root/project with spaces"
 fixture_home="$test_root/home"
+# The user fallback follows each host's convention; LOCALAPPDATA is passed below.
 user_runtime="$test_root/user data/ai-skills/agent-router"
+case "$(uname -s)" in Darwin) user_runtime="$fixture_home/Library/Application Support/ai-skills/agent-router" ;; esac
 project_runtime="$project/.ai-skills/agent-router"
 mkdir -p "$project/child" "$user_runtime" "$project_runtime"
 for runtime in "$user_runtime" "$project_runtime"; do
@@ -32,17 +34,17 @@ for vendor in openai claude; do
   cp "$repo/$vendor/agent-router/scripts/agent-router" "$launcher"
   (
     cd "$project/child"
-    HOME="$fixture_home" XDG_DATA_HOME="$test_root/user data" bash "$launcher" --provider openai --task lookup > "$test_root/decision"
+    HOME="$fixture_home" XDG_DATA_HOME="$test_root/user data" LOCALAPPDATA="$test_root/user data" bash "$launcher" --provider openai --task lookup > "$test_root/decision"
   )
   grep -q '"model":"project-cheap"' "$test_root/decision" || { echo "FAIL: $vendor user-scope launcher ignored project matrix" >&2; exit 1; }
   (
     cd "$project/child"
-    HOME="$fixture_home" XDG_DATA_HOME="$test_root/user data" AI_SKILLS_ROUTER_HOME="$user_runtime" bash "$launcher" --provider openai --task lookup > "$test_root/decision"
+    HOME="$fixture_home" XDG_DATA_HOME="$test_root/user data" LOCALAPPDATA="$test_root/user data" AI_SKILLS_ROUTER_HOME="$user_runtime" bash "$launcher" --provider openai --task lookup > "$test_root/decision"
   )
   grep -q '"model":"user-cheap"' "$test_root/decision" || { echo "FAIL: $vendor override not respected" >&2; exit 1; }
   (
     cd "$test_root"
-    HOME="$fixture_home" XDG_DATA_HOME="$test_root/user data" bash "$launcher" --provider openai --task lookup > "$test_root/decision"
+    HOME="$fixture_home" XDG_DATA_HOME="$test_root/user data" LOCALAPPDATA="$test_root/user data" bash "$launcher" --provider openai --task lookup > "$test_root/decision"
   )
   grep -q '"model":"user-cheap"' "$test_root/decision" || { echo "FAIL: $vendor user fallback failed" >&2; exit 1; }
 done

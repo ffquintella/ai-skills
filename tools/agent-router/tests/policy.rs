@@ -12,6 +12,7 @@ fn request(task: &str) -> Request<'_> {
         provider: "openai",
         task,
         security_sensitive: false,
+        spec_complete: false,
         available_models: None,
         input_tokens: None,
         output_tokens: None,
@@ -166,4 +167,85 @@ fn quota_overrides_only_matching_provider_and_duration() {
         choose(&config, &request("lookup"), &q).unwrap().mode,
         "extreme"
     );
+}
+
+fn routed(provider: &str, task: &str, spec: bool, security: bool) -> (String, String) {
+    let config = Config::parse(YAML).unwrap();
+    let mut q = Quota::default();
+    q.override_percent(provider, 1440, Some(90.0), 1000)
+        .unwrap();
+    let mut r = request(task);
+    r.provider = provider;
+    r.spec_complete = spec;
+    r.security_sensitive = security;
+    let d = choose(&config, &r, &q).unwrap();
+    (d.model.unwrap(), d.effort.unwrap())
+}
+
+#[test]
+fn complete_spec_lowers_change_tasks_one_rung() {
+    let pair = |m: &str, e: &str| (m.to_string(), e.to_string());
+    assert_eq!(
+        routed("anthropic", "complex", false, false),
+        pair("claude-opus-5-5", "xhigh")
+    );
+    assert_eq!(
+        routed("anthropic", "complex", true, false),
+        pair("claude-sonnet-5-5", "high")
+    );
+    assert_eq!(
+        routed("anthropic", "routine", false, false),
+        pair("claude-sonnet-5-5", "high")
+    );
+    assert_eq!(
+        routed("anthropic", "routine", true, false),
+        pair("claude-haiku-5-5", "high")
+    );
+    assert_eq!(
+        routed("openai", "complex", true, false),
+        pair("gpt-6.1-sol", "high")
+    );
+    assert_eq!(
+        routed("openai", "routine", true, false),
+        pair("gpt-6-luna", "high")
+    );
+}
+
+#[test]
+fn complete_spec_never_lowers_security_or_tasks_without_a_spec_policy() {
+    let pair = |m: &str, e: &str| (m.to_string(), e.to_string());
+    assert_eq!(
+        routed("anthropic", "complex", true, true),
+        pair("claude-opus-5-5", "xhigh")
+    );
+    assert_eq!(
+        routed("anthropic", "routine", true, true),
+        pair("claude-opus-5-5", "xhigh")
+    );
+    assert_eq!(
+        routed("anthropic", "review", true, false),
+        routed("anthropic", "review", false, false)
+    );
+    assert_eq!(
+        routed("openai", "lookup", true, false),
+        routed("openai", "lookup", false, false)
+    );
+}
+
+#[test]
+fn spec_policy_cannot_raise_task_minimums() {
+    for bad in [
+        YAML.replace("specified: {min_tier: 2,", "specified: {min_tier: 4,"),
+        YAML.replace(
+            "specified: {min_tier: 2, min_effort: medium",
+            "specified: {min_tier: 2, min_effort: max",
+        ),
+        YAML.replace(
+            "specified: {min_tier: 1, min_effort: medium, preferred_effort: {normal: high",
+            "specified: {min_tier: 1, min_effort: medium, preferred_effort: {normal: low",
+        ),
+    ] {
+        assert_ne!(bad, YAML);
+        assert!(Config::parse(&bad).is_err());
+    }
 }

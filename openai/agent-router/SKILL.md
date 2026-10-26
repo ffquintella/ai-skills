@@ -94,6 +94,37 @@ installer preparation; it does not disable a later explicit launcher invocation.
 
 When two tiers fit, take the cheaper one and rely on the escalation ladder below.
 
+### Check for a complete specification
+
+Before Step 2, look for an approved spec or plan that covers the task: the path the user
+names, `docs/specs/`, `docs/plans/`, or wherever AGENTS.md says (one `ls`, inline). Most of
+the cost of a complex change goes into deciding the design. A complete spec has already
+made those decisions, so the agent only has to carry them out, and a cheaper model can do that.
+
+The spec is **complete** for this task only when all five hold:
+
+- the user approved it (a `brainstorming` design, a `writing-plans` plan, or the user says so);
+- it names every file the task creates or changes;
+- it gives the interfaces (signatures, types, endpoints, schema) and the behavior, error
+  cases included;
+- it gives the test to write or the exact command that proves the task done;
+- it leaves nothing open: no questions, `TBD`, "to decide" or alternatives to choose from.
+
+If any item is missing, the spec is partial: route as if it did not exist. If all hold, lower
+the change tiers one rung in Step 2, and pass `--spec-complete` to the launcher:
+
+| Tier | No complete spec | Complete spec |
+| --- | --- | --- |
+| complex change | `architect`, `gpt-6.1-sol`, xhigh | `builder`, `gpt-6.1-sol`, high |
+| routine change | `builder`, `gpt-6.1-sol`, high | `builder` with `model = "gpt-6-luna"`, high, set in the spawn request only when the host lets it override the pinned model; otherwise `builder` on Sol 6.1 at `medium` |
+
+The lower rung covers the complex signals that are design judgment (multi-file, new
+abstraction, the composition root, configuration schema, connection pooling), because the
+spec already made that judgment. It never covers authentication, authorization, secrets
+or rate limiting: those keep the security route whatever the spec says. It does not apply
+to lookup, verify, review or plan either, because a spec does not make those cheaper. A
+bug that nobody has localised has no complete spec.
+
 ## Step 2: select agent, model and effort
 
 | Tier | Agent | Model | Effort | Sandbox | Parallelism |
@@ -184,7 +215,7 @@ Dependent steps run in one agent sequentially, not in several.
 Vague briefs make subagents redo each other's work or misread the goal. Every brief
 has:
 
-1. **Objective**: one sentence of what "done" means.
+1. **Objective**: one sentence of what "done" means. With a complete spec, cite its path and the task's section instead of restating it; the subagent reads it.
 2. **Boundaries**: files or directories in scope, what not to touch, AGENTS.md rules that apply (auth conventions, endpoint catalogues, routing, no secrets in repo).
 3. **Verification target**: the exact command that must pass, taken from the project's build and test section (for security-sensitive changes, always include the project's authentication or security test filter).
 4. **Output contract**: what to return and how long. Default: a summary under 30 lines with file paths and line numbers, then the verification output trimmed to failures. Never "paste the whole file".
@@ -194,7 +225,7 @@ does not fall back to the built-in `default`/`worker`/`explorer` roles. Preface 
 delegation with the routing decision so it is visible in the transcript:
 
 ```
-router: tier=<tier> agent=<agent> model=<model> effort=<effort> agents=<n> verify=<command>
+router: tier=<tier> agent=<agent> model=<model> effort=<effort> agents=<n> spec=<path|none> verify=<command>
 ```
 
 When fanning out, print one line per domain with `domain=<name>` added, all of them
@@ -212,6 +243,11 @@ scout (luna low) -> builder (sol 6.1 high) -> architect (sol 6.1 xhigh) -> archi
 Escalate with the failure attached to the brief, so the next agent does not rediscover
 it. Two failures at the top rung means the task, not the agent, needs re-scoping: stop
 and ask the user.
+
+A task routed one rung lower on a complete spec climbs back to its default tier first
+(a lowered complex task goes to `architect`). If the subagent reports that the spec is wrong
+or says nothing about a decision it had to make, that is not a model failure: the spec
+was not complete. Stop, settle the gap with the user or in the spec, and route again.
 
 After a fan-out, escalate each failing domain on its own and leave the green ones alone.
 Then run the full build and suite once (through `test-runner`): per-agent greens do not

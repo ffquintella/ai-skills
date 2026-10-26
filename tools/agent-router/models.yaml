@@ -1,5 +1,6 @@
 # Verified catalog: 2026-10-20. API USD / 1M text tokens, not subscription credits.
 # IDs, costs, task requirements and budgets can change without recompilation.
+# `specified` lowers a task's floors under --spec-complete; security floors still win.
 schema_version: 1
 effort_order: [none, low, medium, high, xhigh, max]
 reference_workload:
@@ -32,12 +33,14 @@ tasks:
     min_effort: medium
     preferred_effort: {normal: high, economy: medium, extreme: medium}
     security: {min_tier: 3, min_effort: xhigh, required_capabilities: [code]}
+    specified: {min_tier: 1, min_effort: medium, preferred_effort: {normal: high, economy: medium, extreme: medium}}
   complex:
     min_tier: 3
     required_capabilities: [tools, code]
     min_effort: high
     preferred_effort: {normal: xhigh, economy: high, extreme: high}
     security: {min_tier: 3, min_effort: xhigh, required_capabilities: [code]}
+    specified: {min_tier: 2, min_effort: medium, preferred_effort: {normal: high, economy: high, extreme: medium}}
   review:
     min_tier: 2
     required_capabilities: [tools, code]

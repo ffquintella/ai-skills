@@ -12,7 +12,9 @@ can also prepare the runtime on first use. Cargo/Rust 1.89+ and native build too
 are required only when no compatible native build is available. Set
 `AI_SKILLS_ROUTER_BINARY` to reuse a trusted native binary of the same crate version.
 
-User runtime: `${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router`.
+User runtime: Windows `%LOCALAPPDATA%/ai-skills/agent-router`, macOS
+`~/Library/Application Support/ai-skills/agent-router`, Linux
+`${XDG_DATA_HOME:-$HOME/.local/share}/ai-skills/agent-router`.
 Project runtime: `DIR/.ai-skills/agent-router`. `AI_SKILLS_ROUTER_HOME` overrides
 these defaults. The installer reports the absolute binary path; the skill-local
 `scripts/agent-router` launcher works without PATH changes. On Windows use Git Bash

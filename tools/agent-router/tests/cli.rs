@@ -86,6 +86,25 @@ fn cheapest_capable_and_security_floor() {
     assert_eq!(d["optional_delegation"], false);
 }
 #[test]
+fn spec_complete_flag_lowers_change_tier() {
+    let args = [
+        "--provider",
+        "anthropic",
+        "--task",
+        "complex",
+        "--daily-remaining",
+        "80",
+    ];
+    assert_eq!(value(&run(&args), 0)["model"], "claude-opus-5-5");
+    let mut spec = args.to_vec();
+    spec.push("--spec-complete");
+    let d = value(&run(&spec), 0);
+    assert_eq!(d["model"], "claude-sonnet-5-5");
+    assert_eq!(d["spec_complete"], true);
+    spec.push("--security-sensitive");
+    assert_eq!(value(&run(&spec), 0)["model"], "claude-opus-5-5");
+}
+#[test]
 fn exact_quota_thresholds_and_unknown() {
     for (remaining, mode) in [("25.01", "normal"), ("25", "economy"), ("10", "extreme")] {
         assert_eq!(decision(&["--daily-remaining", remaining])["mode"], mode);
