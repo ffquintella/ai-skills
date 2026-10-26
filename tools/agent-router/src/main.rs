@@ -26,6 +26,9 @@ struct Cli {
     matrix: Option<PathBuf>,
     #[arg(long)]
     security_sensitive: bool,
+    /// An approved spec or plan already fixes files, interfaces, behavior and the verify command.
+    #[arg(long)]
+    spec_complete: bool,
     #[arg(long, value_delimiter = ',')]
     available_models: Option<Vec<String>>,
     #[arg(long)]
@@ -138,6 +141,7 @@ fn run(cli: Cli) -> Result<i32> {
             provider: &cli.provider,
             task: &cli.task,
             security_sensitive: cli.security_sensitive,
+            spec_complete: cli.spec_complete,
             available_models: cli.available_models.as_deref(),
             input_tokens: cli.input_tokens,
             output_tokens: cli.output_tokens,

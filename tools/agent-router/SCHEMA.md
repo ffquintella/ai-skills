@@ -23,6 +23,11 @@ Each task has positive `min_tier`, unique `required_capabilities`, `min_effort`,
 `preferred_effort` (exactly one defined effort for each mode), and `security`.
 Security has `min_tier`, `min_effort`, `required_capabilities`; its tier/effort
 cannot be below base requirements. Security capabilities are added to base ones.
+A task may add `specified`, used only with `--spec-complete`: `min_tier`,
+`min_effort` and `preferred_effort` (one per mode, not increasing in economy),
+none above the task's own values. It replaces the base tier and effort minimums;
+capabilities and security floors are unchanged. Omit it for tasks a specification
+does not make easier (lookup, verify, review).
 Tier is a numeric policy judgment, not inferred from a model name. Lower mode
 effort cannot violate the minimum. A model with fewer supported effort levels is
 assigned the closest supported value at/below the preference that meets the floor,

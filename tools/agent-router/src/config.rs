@@ -46,6 +46,17 @@ pub struct Task {
     pub min_effort: String,
     pub preferred_effort: BTreeMap<String, String>,
     pub security: Floor,
+    /// Lower requirements used when a complete specification already settles the design.
+    #[serde(default)]
+    pub specified: Option<Specified>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Specified {
+    pub min_tier: u32,
+    pub min_effort: String,
+    pub preferred_effort: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -228,6 +239,35 @@ impl Config {
                     "mode efforts must preserve minimum and not increase in economy",
                 )?;
                 previous = effort;
+            }
+            if let Some(spec) = &task.specified {
+                let spec_base = self
+                    .effort_rank(&spec.min_effort)
+                    .ok_or_else(|| Error::invalid("unknown specified minimum effort"))?;
+                require(
+                    spec.min_tier > 0 && spec.min_tier <= task.min_tier && spec_base <= base,
+                    "specified minimums cannot exceed task minimums",
+                )?;
+                require(
+                    spec.preferred_effort.len() == 3,
+                    "specified requires three mode effort values",
+                )?;
+                let mut previous = usize::MAX;
+                for name in ["normal", "economy", "extreme"] {
+                    let effort = spec
+                        .preferred_effort
+                        .get(name)
+                        .and_then(|e| self.effort_rank(e))
+                        .ok_or_else(|| {
+                            Error::invalid("missing or unknown specified mode effort")
+                        })?;
+                    let task_effort = self.effort_rank(&task.preferred_effort[name]).unwrap_or(0);
+                    require(
+                        effort >= spec_base && effort <= previous && effort <= task_effort,
+                        "specified mode efforts must preserve their minimum, not increase in economy and not exceed the task's",
+                    )?;
+                    previous = effort;
+                }
             }
         }
         for (name, provider) in &self.providers {

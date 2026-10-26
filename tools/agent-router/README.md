@@ -67,14 +67,20 @@ the executable permission. macOS binaries are unsigned and not notarized.
 agent-router --provider openai --task routine --daily-remaining 70 --weekly-remaining 8
 agent-router --provider anthropic --task review --security-sensitive --weekly-remaining 5
 agent-router --provider openai --task complex --available-models gpt-6.1-sol,gpt-6-astra
+agent-router --provider anthropic --task complex --spec-complete --daily-remaining 70
 agent-router --provider openai --task lookup --matrix /path/to/models.yaml --format text
 ```
 
 In PowerShell, use `./agent-router.exe` when the executable is in the current
 directory. Tasks are explicit `lookup`, `routine`, `complex`, `review` and `verify`;
 the YAML can add tasks and providers. The tool does not guess task complexity from
-natural language. Model tier/capability assignments are policy judgments, not
-benchmark guarantees. Restrict `--available-models` to what your host actually
+natural language. Pass `--spec-complete` when an approved spec or plan already
+fixes the files, interfaces, behavior and verification command for the task: the
+task's `specified` floors then replace its normal tier and effort minimums (by
+default `complex` drops to a tier-2 model at `high`, `routine` to tier 1).
+Security floors still apply, and tasks without a `specified` block ignore the
+flag; the output's `spec_complete` says whether it took effect. Model
+tier/capability assignments are policy judgments, not benchmark guarantees. Restrict `--available-models` to what your host actually
 offers; YAML catalog membership alone does not prove account access.
 
 ## Economy behavior

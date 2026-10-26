@@ -85,7 +85,9 @@ route it without re-deciding (`agent_type` selects the role):
 
 State it as a line under the task title (`**Tier:** routine (builder role)`) with a short reason
 when it is not obvious. It is a suggestion: the router decides at execution time, and a task
-that fails at its tier escalates one step. Projects without the `.codex/agents/*.toml` roles spawn the default role with an explicit
+that fails at its tier escalates one step. Set the tier from what the task is, not from how
+detailed the plan is: a plan that passes the router's complete-specification check gets each
+task lowered one rung at execution, so lowering it here as well would count the plan twice. Projects without the `.codex/agents/*.toml` roles spawn the default role with an explicit
 `model` and `reasoning_effort` matching the tier (`agent-router` lists them).
 
 ## Step 5: write the document

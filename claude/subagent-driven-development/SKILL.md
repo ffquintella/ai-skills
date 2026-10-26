@@ -76,7 +76,10 @@ Climb one rung when a fix round fails; attach the failure to the next brief. Do 
 the same level after a failed round.
 
 Turn count beats token price: the router's defaults are the floor for implementers and
-reviewers, and a task whose plan text holds the complete code needs only `builder`. Several
+reviewers, so do not go below them on your own. The one exception is the router's: when the
+plan passes its complete-specification check, it lowers each implementer one rung (complex
+to `builder`, routine to `builder` on a cheaper model), and the escalation ladder starts
+from there. Security-sensitive tasks are never lowered. Several
 small same-shape edits (one fix repeated across files) go to **one** `builder` with one
 brief listing every file, reviewed as one unit.
 

@@ -9,6 +9,7 @@ pub struct Request<'a> {
     pub provider: &'a str,
     pub task: &'a str,
     pub security_sensitive: bool,
+    pub spec_complete: bool,
     pub available_models: Option<&'a [String]>,
     pub input_tokens: Option<u64>,
     pub output_tokens: Option<u64>,
@@ -26,6 +27,7 @@ pub struct QuotaStatus {
 pub struct Decision {
     pub provider: String,
     pub task: String,
+    pub spec_complete: bool,
     pub model: Option<String>,
     pub effort: Option<String>,
     pub mode: String,
@@ -97,8 +99,14 @@ pub fn choose(config: &Config, request: &Request<'_>, quota: &Quota) -> Result<D
         .tasks
         .get(request.task)
         .ok_or_else(|| Error::invalid("task not in YAML matrix"))?;
+    // A complete specification lowers the base requirements; security floors still apply.
+    let spec = task.specified.as_ref().filter(|_| request.spec_complete);
+    let (task_min_tier, task_min_effort, task_preferred) = match spec {
+        Some(s) => (s.min_tier, &s.min_effort, &s.preferred_effort),
+        None => (task.min_tier, &task.min_effort, &task.preferred_effort),
+    };
     let base = config
-        .effort_rank(&task.min_effort)
+        .effort_rank(task_min_effort)
         .ok_or_else(|| Error::invalid("invalid task effort"))?;
     let floor = if request.security_sensitive {
         base.max(
@@ -110,9 +118,9 @@ pub fn choose(config: &Config, request: &Request<'_>, quota: &Quota) -> Result<D
         base
     };
     let min_tier = if request.security_sensitive {
-        task.min_tier.max(task.security.min_tier)
+        task_min_tier.max(task.security.min_tier)
     } else {
-        task.min_tier
+        task_min_tier
     };
     let input = request
         .input_tokens
@@ -180,7 +188,7 @@ pub fn choose(config: &Config, request: &Request<'_>, quota: &Quota) -> Result<D
             continue;
         }
         let preferred = config
-            .effort_rank(&task.preferred_effort[mode_name])
+            .effort_rank(&task_preferred[mode_name])
             .ok_or_else(|| Error::invalid("invalid mode effort"))?
             .max(floor);
         // Choose nearest supported effort at/below preferred, always respecting the floor.
@@ -230,11 +238,14 @@ pub fn choose(config: &Config, request: &Request<'_>, quota: &Quota) -> Result<D
         return Ok(Decision {
             provider: request.provider.into(),
             task: request.task.into(),
+            spec_complete: spec.is_some(),
             model: Some(id.clone()),
             effort: Some(effort),
             mode: mode_name.into(),
             reason: if request.security_sensitive {
                 "cheapest eligible model preserving security tier and effort floors"
+            } else if spec.is_some() {
+                "cheapest available model meeting the task's complete-specification floors"
             } else {
                 "cheapest available model satisfying task capabilities and resource budgets"
             }
@@ -252,6 +263,7 @@ pub fn choose(config: &Config, request: &Request<'_>, quota: &Quota) -> Result<D
         return Ok(Decision {
             provider: request.provider.into(),
             task: request.task.into(),
+            spec_complete: spec.is_some(),
             model: None,
             effort: None,
             mode: "blocked".into(),

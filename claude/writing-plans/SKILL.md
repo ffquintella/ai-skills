@@ -86,7 +86,9 @@ route it without re-deciding:
 
 State it as a line under the task title (`**Tier:** routine (builder)`) with a short reason
 when it is not obvious. It is a suggestion: the router decides at execution time, and a task
-that fails at its tier escalates one step. Projects without the agent templates use a
+that fails at its tier escalates one step. Set the tier from what the task is, not from how
+detailed the plan is: a plan that passes the router's complete-specification check gets each
+task lowered one rung at execution, so lowering it here as well would count the plan twice. Projects without the agent templates use a
 general-purpose agent at the matching effort.
 
 ## Step 5: write the document
