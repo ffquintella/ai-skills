@@ -1,4 +1,4 @@
-# Verified catalog: 2026-10-20. API USD / 1M text tokens, not subscription credits.
+# Verified catalog: 2026-11-11. API USD / 1M text tokens, not subscription credits.
 # IDs, costs, task requirements and budgets can change without recompilation.
 # `specified` lowers a task's floors under --spec-complete; security floors still win.
 schema_version: 1
@@ -120,7 +120,7 @@ providers:
         max_output_tokens: 128000
         prices: {input: 4.0, cached_input: 0.20, output: 20.0}
         price_bands: []
-      - id: claude-fable-5-1
+      - id: claude-fable-5-2
         enabled: true
         tier: 4
         capabilities: [tools, code]
@@ -128,5 +128,5 @@ providers:
         quota_buckets: []
         context_tokens: 1000000
         max_output_tokens: 128000
-        prices: {input: 10.0, cached_input: 0.25, output: 50.0}
+        prices: {input: 8.0, cached_input: 0.20, output: 40.0}
         price_bands: []

@@ -1,24 +1,24 @@
 # Sources behind the routing matrix
 
-Model catalog, prices and effort verified 2026-10-17. Other background collected
+Model catalog, prices and effort verified 2026-11-11. Other background collected
 2026-09-14; historical benchmarks below are not evaluations of the new defaults. Official Anthropic material first, independent articles after.
 
 ## Official documentation and Anthropic engineering posts
 
 - **Current model catalog** - https://platform.claude.com/docs/en/models/overview
   General-purpose lineup: claude-haiku-5-5, claude-sonnet-5-5,
-  claude-opus-5-5, claude-fable-5-1. All list 1M context and 128K max output.
+  claude-opus-5-5, claude-fable-5-2. All list 1M context and 128K max output.
   Templates use full IDs rather than moving aliases. Specialized/restricted
   models are outside the default routing ladder.
 - **Pricing** - https://platform.claude.com/docs/en/about-claude/pricing
   Standard Claude API input/output USD per 1M tokens: Haiku 5.5 $0.10/$0.50
   for prompts up to 100,000 tokens, $0.50/$2.50 above that; Sonnet 5.5 $2/$10;
-  Opus 5.5 $4/$20; Fable 5.1 $10/$50. Partner and subscription billing differs.
-  Fable is 2.5x current Opus, rather than the old 2x ratio. Haiku-relative cost
-  comparisons in the skill use its short-prompt input rate.
+  Opus 5.5 $4/$20; Fable 5.2 $8/$40. Partner and subscription billing differs.
+  Fable 5.2 is 2x current Opus (Fable 5.1, now legacy, was 2.5x at $10/$50).
+  Haiku-relative cost comparisons in the skill use its short-prompt input rate.
 - **Effort parameter** - https://platform.claude.com/docs/en/build-with-claude/effort
   All four current models support low/medium/high/xhigh/max. Opus 5.5 and
-  Haiku 5.5 default to medium; Sonnet 5.5 and Fable 5.1 to high. Haiku low fits
+  Haiku 5.5 default to medium; Sonnet 5.5 and Fable 5.2 to high. Haiku low fits
   short tool tasks, but long prompts can cause skipped checks; raise effort for
   instruction-heavy work. The API supports per-message effort changes with a
   beta header on supported platforms, preserving cache. Agent templates pin

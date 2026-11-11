@@ -127,10 +127,10 @@ If the router answers `inline`, the coordinator just does the work without spawn
 
 | Tier | Claude Code | OpenAI Codex |
 | --- | --- | --- |
-| lookup / verify | `scout`, `test-runner` on Haiku 4.5 | `scout`, `test-runner` on `gpt-5.6-luna`, low |
-| routine change / review | `builder`, `reviewer` on Sonnet 5, high | `builder`, `reviewer` on `gpt-5.6-terra`, high |
-| complex change | `architect` on Opus 5, xhigh | `architect` on `gpt-5.6-sol`, xhigh |
-| frontier escalation | `architect` with `model: fable` | `architect` with `model = "gpt-6-astra"` |
+| lookup / verify | `scout`, `test-runner` on Haiku 5.5, low | `scout`, `test-runner` on `gpt-5.6-luna`, low |
+| routine change / review | `builder`, `reviewer` on Sonnet 5.5, high | `builder`, `reviewer` on `gpt-5.6-terra`, high |
+| complex change | `architect` on Opus 5.5, xhigh | `architect` on `gpt-5.6-sol`, xhigh |
+| frontier escalation | `architect` with `model: fable` (Fable 5.2) | `architect` with `model = "gpt-6-astra"` |
 
 ### Tuning cost
 

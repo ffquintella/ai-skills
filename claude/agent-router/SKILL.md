@@ -12,7 +12,7 @@ part (file reads, test output, exploration) into a disposable context and return
 summary. The two cost levers are the **model tier** and the **effort level**
 (`low` < `medium` < `high` < `xhigh` < `max`).
 
-Verified 2026-10-17. Standard Claude API text prices in USD per 1M tokens;
+Verified 2026-11-11. Standard Claude API text prices in USD per 1M tokens;
 subscription usage and partner pricing can differ.
 
 | Tier | Model id | Input $/1M | Output $/1M | Relative input cost |
@@ -20,12 +20,12 @@ subscription usage and partner pricing can differ.
 | Haiku 5.5 | `claude-haiku-5-5` | 0.10 / 0.50 | 0.50 / 2.50 | 1x / 5x |
 | Sonnet 5.5 | `claude-sonnet-5-5` | 2.00 | 10.00 | 20x |
 | Opus 5.5 | `claude-opus-5-5` | 4.00 | 20.00 | 40x |
-| Fable 5.1 | `claude-fable-5-1` | 10.00 | 50.00 | 100x |
+| Fable 5.2 | `claude-fable-5-2` | 8.00 | 40.00 | 80x |
 
 Haiku's first price applies to prompts up to 100,000 tokens; the second applies
 over that threshold. Relative costs use short-prompt Haiku as the baseline.
 Haiku 5.5 now supports all five effort levels and defaults to `medium`, as does
-Opus 5.5. Sonnet 5.5 and Fable 5.1 default to `high`. Use `low` for short Haiku
+Opus 5.5. Sonnet 5.5 and Fable 5.2 default to `high`. Use `low` for short Haiku
 lookups and command execution, and raise it for longer instruction-heavy work.
 Details and URLs in [references/sources.md](references/sources.md).
 
@@ -160,9 +160,9 @@ Never omit `model`: an omitted model inherits the coordinator's own, usually the
 expensive one. Skills that fall back to a general-purpose agent refer to this table
 instead of choosing a model themselves.
 
-Use `claude-fable-5-1` only when the user asks for it by name or an `architect` run
+Use `claude-fable-5-2` only when the user asks for it by name or an `architect` run
 at `xhigh` failed on a frontier problem (novel algorithm, deep concurrency bug).
-It costs 2.5x Opus 5.5 at base input and output rates.
+It costs 2x Opus 5.5 at base input and output rates.
 
 ### Lookups: query the code graph first when one exists
 
@@ -247,7 +247,7 @@ Read the agent's evidence (test output, build exit code). If it fails or the ans
 shallow, do not retry at the same level: climb one rung.
 
 ```
-scout (haiku 5.5 low) -> builder (sonnet 5.5 high) -> architect (opus 5.5 xhigh) -> architect with model: claude-fable-5-1
+scout (haiku 5.5 low) -> builder (sonnet 5.5 high) -> architect (opus 5.5 xhigh) -> architect with model: claude-fable-5-2
 ```
 
 Escalate with the failure attached to the brief, so the next agent does not rediscover
