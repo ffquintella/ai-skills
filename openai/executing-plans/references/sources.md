@@ -6,7 +6,7 @@ Adapted (rewritten, not copied) from the `executing-plans` skill in
 
 Changes: tighter wording and no all-caps rules; an explicit critical review of the plan with
 a single pause to raise concerns before starting; the final review routed through
-`agent-router` (`reviewer` subagent via `spawn_agent`, `gpt-5.6-sol` for security-sensitive
+`agent-router` (`reviewer` subagent via `spawn_agent`, `gpt-6.1-sol` at `xhigh` for security-sensitive
 code) and `requesting-code-review`; the scripts kept and adapted to the `.ai-skills/sdd/`
 workspace shared with `subagent-driven-development`, which must be installed next to this
 skill; plan and spec locations follow the project's AGENTS.md (default `docs/plans/`); a

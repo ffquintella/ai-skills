@@ -60,11 +60,11 @@ skill only says which tier each role belongs to:
 
 | Role | Subagent role (router) | Notes |
 | --- | --- | --- |
-| Implementer, ordinary task | `builder` (`gpt-5.6-terra`, high) | The plan has the approach and the files. |
-| Implementer, complex task | `architect` (`gpt-5.6-sol`, xhigh) | Plan marks it complex, it needs design judgment, or touches auth, secrets, config schema or the composition root. |
-| Task review, re-review | `reviewer` (`gpt-5.6-terra`, high, read-only) | `gpt-5.6-sol` for security-sensitive code, per the router. |
-| Final whole-branch review | `reviewer` | `gpt-5.6-sol` for security-sensitive code; consider it for a branch spanning many tasks. |
-| Test or build runs for evidence | `test-runner` (`gpt-5.6-luna`, low) | Failures only. |
+| Implementer, ordinary task | `builder` (`gpt-6.1-sol`, high) | The plan has the approach and the files. |
+| Implementer, complex task | `architect` (`gpt-6.1-sol`, xhigh) | Plan marks it complex, it needs design judgment, or touches auth, secrets, config schema or the composition root. |
+| Task review, re-review | `reviewer` (`gpt-6.1-sol`, high, read-only) | `xhigh` for security-sensitive code, per the router. |
+| Final whole-branch review | `reviewer` | `xhigh` for security-sensitive code; consider it for a branch spanning many tasks. |
+| Test or build runs for evidence | `test-runner` (`gpt-6-luna`, low) | Failures only. |
 
 Spawning needs `multi_agent = true` under `[features]` in `~/.codex/config.toml`. Roles live
 in `.codex/agents/*.toml` and are selected with `agent_type`. Every `spawn_agent` call sets

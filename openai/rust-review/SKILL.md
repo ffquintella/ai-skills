@@ -28,7 +28,7 @@ invent defaults for the first three.
 | Parameter | Values | Meaning |
 | --- | --- | --- |
 | `threat_model` | `REMOTE`, `LOCAL_UNPRIVILEGED`, `BOTH` | Who the attacker is: network only, an unprivileged local user, or either |
-| `worker_model` | a Codex model, e.g. `gpt-5.6-luna`, `gpt-5.6-terra`, `gpt-5.6-sol` | Model for the cluster workers; judges use `gpt-5.6-terra` or better. Suggest Terra, Sol for a crypto, parser or sandbox crate |
+| `worker_model` | a Codex model, e.g. `gpt-6-luna`, `gpt-6.1-sol`, `gpt-6-astra` | Model for the cluster workers; judges use `gpt-6.1-sol` or better. Suggest `gpt-6.1-sol`, also for a crypto, parser or sandbox crate; `gpt-6-astra` costs five times as much |
 | `severity_filter` | `all`, `medium`, `high` | Minimum severity shown in the report |
 | `scope_subpath` | optional path | Findings may be filed only inside it. Everything else (default `.`) is read-only context for callers and reachability |
 

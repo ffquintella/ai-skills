@@ -11,20 +11,24 @@ turn, and quality drops as it fills. Delegating to a subagent moves the verbose 
 summary. The two cost levers are the **model tier** and the **reasoning effort**
 (`low` < `medium` < `high` < `xhigh` < `max` for the recommended defaults).
 
-Verified 2026-10-17. Standard API text prices in USD per 1M tokens; subscription
+Verified 2026-11-16. Standard API text prices in USD per 1M tokens; subscription
 usage, long prompts and service tiers can differ.
 
 | Tier | Model id | Input $/1M | Output $/1M | Relative input cost |
 | --- | --- | --- | --- | --- |
 | GPT-6 Luna | `gpt-6-luna` | 0.10 | 0.50 | 1x |
+| GPT-6.1 Terra | `gpt-6.1-terra` | 1.00 | 5.00 | 10x |
 | GPT-6.1 Sol | `gpt-6.1-sol` | 2.00 | 10.00 | 20x |
 | GPT-6 Astra | `gpt-6-astra` | 10.00 | 50.00 | 100x |
 
 GPT-6.1 Sol replaces the older Terra/Sol routing defaults: use `high` for routine
 changes and `xhigh` for complex changes. GPT-6 Sol remains available at $2/$10,
-but GPT-6.1 Sol is the newer choice at the same base price. Cached input is 5% for
-GPT-6.1 Sol and 10% for Luna/Astra. All three recommended models support `low`
-through `max`; only Luna also supports `none`. Sol 6.1 rejects `none` and `minimal`.
+but GPT-6.1 Sol is the newer choice at the same base price. GPT-6.1 Terra is not a
+routing default: OpenAI positions it for visual reasoning, computer use and writing
+and publishes no coding comparison, so do not put it on `builder` without a measured
+reason. Cached input is 5% for GPT-6.1 Sol and Terra, 10% for Luna/Astra. Luna,
+Sol 6.1 and Astra support `low` through `max`; only Luna and Terra also support
+`none`. Sol 6.1 rejects `none` and `minimal`.
 Use the Responses API for tools. Details and URLs in
 [references/sources.md](references/sources.md).
 

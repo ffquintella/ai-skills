@@ -42,8 +42,8 @@ work cannot be reviewed by range: commit it first, or tell the reviewer to run
 
 ### 2. Pick the reviewer through `agent-router`
 
-Use the `reviewer` subagent (`gpt-5.6-terra`, high reasoning effort, `read-only` sandbox).
-Override to `model = "gpt-5.6-sol"` when the diff touches authentication, authorization,
+Use the `reviewer` subagent (`gpt-6.1-sol`, high reasoning effort, `read-only` sandbox).
+Raise `reasoning_effort` to `xhigh` when the diff touches authentication, authorization,
 secrets, rate limiting or other security-sensitive paths, as the router's review row
 says. If the project has not installed the `agent-router` role templates
 (`.codex/agents/reviewer.toml`), spawn a default subagent with the same prompt and set
@@ -98,7 +98,7 @@ Just finished Task 2 of docs/plans/2026-10-16-index-repair.md: verifyIndex() and
 
 BASE_SHA=a7981ec (end of Task 1)   HEAD_SHA=3df7661
 
-spawn_agent(agent_type: "reviewer", fork_turns: "none", model: "gpt-5.6-terra",
+spawn_agent(agent_type: "reviewer", fork_turns: "none", model: "gpt-6.1-sol",
             reasoning_effort: "high"), prompt = filled template:
   DESCRIPTION:  Added verifyIndex() and repairIndex() covering 4 corruption types
   REQUIREMENTS: Task 2 in docs/plans/2026-10-16-index-repair.md

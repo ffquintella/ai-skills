@@ -4,8 +4,8 @@ Sent after a fix round. It verifies each earlier finding was addressed and that 
 not break anything. It is not a fresh review.
 
 - `spawn_agent` with `agent_type: "reviewer"` (read-only sandbox), `fork_turns: "none"`, and
-  an explicit `model` and `reasoning_effort` (`gpt-5.6-terra` at `high` is enough for a small
-  fix diff; `gpt-5.6-sol` only where the task was security-sensitive).
+  an explicit `model` and `reasoning_effort` (`gpt-6.1-sol` at `high` is enough for a small
+  fix diff; `xhigh` only where the task was security-sensitive).
 - Placeholders: `FINDINGS` are the Critical/Important findings and confirmed gaps from the
   previous review, verbatim, one per bullet; `FIX_BASE_SHA` is the head the previous review
   saw; `DIFF_FILE` from `scripts/review-package PLAN FIX_BASE HEAD`.

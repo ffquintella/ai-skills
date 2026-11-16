@@ -4,8 +4,8 @@ One reviewer reads one task's diff once and returns two verdicts: spec complianc
 quality. It is a task-scoped gate, not a merge review; the whole-branch review comes later.
 
 - `spawn_agent` with `agent_type: "reviewer"` (read-only sandbox), `fork_turns: "none"`,
-  and an explicit `model` and `reasoning_effort` (`gpt-5.6-terra` at `high`;
-  `gpt-5.6-sol` when the task touches security-sensitive code such as authentication,
+  and an explicit `model` and `reasoning_effort` (`gpt-6.1-sol` at `high`;
+  `xhigh` when the task touches security-sensitive code such as authentication,
   secrets or rate limiting, per `agent-router`).
 - The reviewer returns its report as its final message; it does not write files.
 - Placeholders: `BRIEF_FILE` from `scripts/task-brief`; `REPORT_FILE` is the implementer's

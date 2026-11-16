@@ -6,8 +6,8 @@ Fill the placeholders and send as the prompt of a `spawn_agent` call.
   failed one (see the routing table in SKILL.md). Without the router's roles, a default
   subagent.
 - `fork_turns`: `"none"`, so it starts with a clean context.
-- `model` and `reasoning_effort`: set explicitly (`gpt-5.6-terra` at `high` for `builder`,
-  `gpt-5.6-sol` at `xhigh` for `architect`), checked against your spawn allowlist.
+- `model` and `reasoning_effort`: set explicitly (`gpt-6.1-sol` at `high` for `builder`,
+  `gpt-6.1-sol` at `xhigh` for `architect`), checked against your spawn allowlist.
 - Sandbox: `workspace-write`. Fix rounds go to the same subagent with `followup_task`; a
   climb to `architect` is a new spawn.
 

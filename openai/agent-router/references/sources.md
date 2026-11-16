@@ -1,6 +1,6 @@
 # Sources behind the routing matrix (OpenAI / Codex)
 
-Model catalog, prices and effort verified 2026-10-17. Other background collected
+Model catalog, prices and effort verified 2026-11-16. Other background collected
 2026-09-14; historical benchmarks below are not evaluations of the new defaults. Official OpenAI material first, independent articles after.
 
 ## Official OpenAI documentation
@@ -16,6 +16,12 @@ Model catalog, prices and effort verified 2026-10-17. Other background collected
   Astra support low/medium/high/xhigh/max; Sol 6.1 explicitly rejects none/minimal.
   Luna also supports none. Use Responses for tools; Sol 6.1 Chat Completions has
   no tool calling, and Luna Chat Completions function calling requires none.
+- **GPT-6.1 Terra** - https://developers.openai.com/api/docs/models/gpt-6.1-terra
+  ($1 input, $0.05 cached input, $5 output; none through max effort; same context
+  and output limits). Listed on the models page as of 2026-11-16 and described as "a
+  fast, efficient model for visual reasoning, precise computer use, and clear, natural
+  writing"; no coding benchmark or comparison with Sol 6.1, so it is not a routing
+  default. The models page lists no newer Luna, Sol or Astra.
 - **Previous Sol** - https://developers.openai.com/api/docs/models/gpt-6-sol
   Still available at $2 input/$0.20 cached/$10 output, but its model page points
   to GPT-6.1 Sol as the newer choice. Replaced Terra and Sol 5.6 in our defaults

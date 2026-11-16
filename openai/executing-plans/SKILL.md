@@ -117,10 +117,10 @@ installed).
 (MERGE_BASE is where the branch started, for example `git merge-base main HEAD`) writes
 the diff to a file. Route the review through `agent-router`: `spawn_agent` with
 `agent_type: "reviewer"` (read-only), `fork_turns: "none"` so it starts clean, and an explicit
-`model` and `reasoning_effort` (`gpt-5.6-terra` at `high` by default). The brief is the
+`model` and `reasoning_effort` (`gpt-6.1-sol` at `high` by default). The brief is the
 template in `requesting-code-review`. Hand it the package path, the plan and spec
 paths, the plan's review-focus notes verbatim if it has any, and a pointer to the ledger's
-`Ruling:` lines so it can weigh your calls. Use `gpt-5.6-sol` for security-sensitive code (the
+`Ruling:` lines so it can weigh your calls. Use `xhigh` for security-sensitive code (the
 router's override), and consider it for a branch that spans many tasks; check the model name
 against your spawn allowlist first. Needs `multi_agent = true` under `[features]` in
 `~/.codex/config.toml`. Wait with `wait_agent` and a 5 to 10 minute timeout, not short polls. This is the
